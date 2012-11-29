@@ -889,7 +889,8 @@ class EndpointsModel(ndb.Model):
           message fields are explicitly disallowed by having
           allow_message_fields set to False.
     """
-    ordering = ordering or cls._ordering
+    if ordering is None:
+      ordering = cls._ordering
     # If ordering is None, either the module user manaully removed the default
     # value or some bug has occurred in the library
     message_ordering = MessageOrdering(ordering,
@@ -968,7 +969,8 @@ class EndpointsModel(ndb.Model):
       The cached or created ProtoRPC (collection) message class specified by
           the ordering.
     """
-    collection_ordering = collection_ordering or cls._ordering
+    if collection_ordering is None:
+      collection_ordering = cls._ordering
     message_ordering = MessageOrdering(collection_ordering,
                                        basename=cls.__name__ + 'Proto')
 
@@ -1272,7 +1274,7 @@ class EndpointsModel(ndb.Model):
   @classmethod
   @utils.positional(1)
   def query_method(cls,
-                   query_ordering=None,
+                   query_ordering=(),
                    collection_ordering=None,
                    limit_default=QUERY_LIMIT_DEFAULT,
                    limit_max=QUERY_LIMIT_MAX,
@@ -1322,7 +1324,7 @@ class EndpointsModel(ndb.Model):
     Args:
       query_ordering: An (optional) list, tuple, dictionary or MessageOrdering
           that defines a field ordering in a ProtoRPC message class. Defaults to
-          None.
+          an empty tuple, which results in a simple datastore query of the kind.
       collection_ordering: An (optional) list, tuple, dictionary or
           MessageOrdering that defines a field ordering in a ProtoRPC message
           class. Defaults to None.
