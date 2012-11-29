@@ -1,0 +1,14 @@
+application: 3fa7f29a3614516bb168af947b29fd # my-api
+version: 1
+runtime: python27
+threadsafe: true
+api_version: 1
+
+handlers:
+# Endpoints handler
+- url: /_ah/spi/.*
+  script: main.application
+
+libraries:
+- name: pycrypto
+  version: "2.6"
