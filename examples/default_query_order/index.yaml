@@ -1,0 +1,7 @@
+indexes:
+
+- kind: MyModel
+  properties:
+  - name: attr1
+  - name: attr2
+    direction: desc
