@@ -1,9 +1,14 @@
+import random
+
 from google.appengine.ext import ndb
 from protorpc import remote
 
 import endpoints
 
 from endpoints_proto_datastore.ndb import EndpointsModel
+
+
+PHRASES = ['I', 'AM', 'RANDOM', 'AND', 'ARBITRARY']
 
 
 class MyModel(EndpointsModel):
@@ -15,8 +20,12 @@ class MyModel(EndpointsModel):
 @endpoints.api(name='myapi', version='v1', description='My Little API')
 class MyApi(remote.Service):
 
-  @MyModel.method(path='mymodel', http_method='POST', name='mymodel.insert')
+  @MyModel.method(request_ordering=('attr1',),
+                  path='mymodel',
+                  http_method='POST',
+                  name='mymodel.insert')
   def MyModelInsert(self, my_model):
+    my_model.attr2 = '%s-%s' % (my_model.attr1, random.choice(PHRASES))
     my_model.put()
     return my_model
 
