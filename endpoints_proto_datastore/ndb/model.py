@@ -83,8 +83,6 @@ def ToValue(prop, value):
   if value is None:
     return value
   elif isinstance(value, EndpointsModel):
-    # TODO(dhermes): Is there a way we can specify ordering so as to be able
-    #                to pass property specific orderings down?
     return value.ToMessage()
   elif hasattr(prop, 'ToValue') and callable(prop.ToValue):
     return prop.ToValue(value)
@@ -156,8 +154,6 @@ def FromValue(prop, value):
     return value
 
 
-# TODO(dhermes): Attempt to remove dependence on EndpointsModel and move this
-#                to the generic utils
 class _EndpointsQueryInfo(object):
   """A custom container for query information.
 
@@ -211,8 +207,6 @@ class _EndpointsQueryInfo(object):
   def _PopulateFilters(self):
     """Populates filters in query info by using values set on the entity."""
     entity = self._entity
-    # TODO(dhermes): Consider upgrading this. Currently ignoring
-    #                _alias_properties since can only query from datastore.
     for prop in entity._properties.itervalues():
       # The name of the attr on the model/object, may differ from the name
       # of the NDB property in the datastore
@@ -556,8 +550,6 @@ class EndpointsMetaModel(ndb.MetaModel):
         bases = base.__bases__
 
 
-# TODO(dhermes): Consider also making this a decorator of an existing NDB model
-#                or defining a method which will perform such decoration.
 class EndpointsModel(ndb.Model):
   """Subclass of NDB model that enables translation to ProtoRPC message classes.
 
@@ -985,10 +977,6 @@ class EndpointsModel(ndb.Model):
 
     proto_model = cls.ProtoModel(ordering=message_ordering)
 
-    # TODO(dhermes): Add capability for more fields than items and nextPageToken
-    #                by using some keyword arg other than collection_ordering.
-    #                It is not clear where this should be specified, but would
-    #                likely come through as an argument to query_method.
     message_fields = {
         'items': messages.MessageField(proto_model, 1, repeated=True),
         'nextPageToken': messages.StringField(2),
@@ -1365,8 +1353,6 @@ class EndpointsModel(ndb.Model):
       raise TypeError('Received a request message class on a method intended '
                       'for queries. This is explicitly not allowed. Only '
                       'query_ordering can be specified.')
-    # TODO(dhermes): Try to figure out a way to support message fields for
-    #                queries or conclusively write it off.
     kwargs[REQUEST_MESSAGE] = cls.ProtoModel(ordering=query_ordering,
                                              allow_message_fields=False)
 
@@ -1444,13 +1430,6 @@ class EndpointsModel(ndb.Model):
 
         query_options = {'start_cursor': query_info.cursor}
         if use_projection:
-          # TODO(dhermes): Support {attr.subattr} for {StructuredProperty}s,
-          #                likely a change in MessageOrdering, but possible
-          #                elsewhere? This would also solve the problem of
-          #                passing property specific orderings down, but would
-          #                have the adverse affect of creating possible name
-          #                collisions and unnecessary re-definitions of ProtoRPC
-          #                message classes, if done incorrectly.
           projection = [value for value in collection_ordering
                         if value in cls._properties]
           query_options['projection'] = projection

@@ -55,9 +55,6 @@ NDB_PROPERTY_TO_PROTO = {
     ndb.FloatProperty: messages.FloatField,
     ndb.GenericProperty: RaiseNotImplementedMethod(ndb.GenericProperty),
     ndb.IntegerProperty: messages.IntegerField,
-    # TODO(dhermes): I am not so sure how much sense it makes to support
-    #                JsonProperty-->Proto since it ends up as JSON through
-    #                the resulting API anyhow
     ndb.JsonProperty: messages.BytesField,
     ndb.KeyProperty: messages.StringField,
     ndb.ModelKey: RaiseNotImplementedMethod(
