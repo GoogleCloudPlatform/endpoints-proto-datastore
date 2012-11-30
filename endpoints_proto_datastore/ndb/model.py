@@ -159,16 +159,18 @@ class _EndpointsQueryInfo(object):
 
   This will be set on an EndpointsModel (or subclass) instance, and can be used
   in conjunction with alias properties to store query information, simple
-  filters and ordering.
+  filters, ordering and ancestor.
 
-  Uses an entity to construct simple filters and to validate ordering and
-  finally to construct a query from these filters and ordering.
+  Uses an entity to construct simple filters, to validate ordering, to validate
+  ancestor and finally to construct a query from these filters, ordering and/or
+  ancestor.
 
   Attributes:
     _entity: An instance of EndpointsModel or a subclass. The values from this
         will be used to create filters for a query.
     _filters: A set of simple equality filters (ndb.FilterNode). Utilizes the
         fact that FilterNodes are hashable and respect equality.
+    _ancestor: An ndb Key to be used as an ancestor for a query.
     _cursor: A datastore_query.Cursor, to be used for resuming a query.
     _limit: A positive integer, to be used in a fetch.
     _order: String; comma separated list of property names or property names
@@ -197,6 +199,7 @@ class _EndpointsQueryInfo(object):
     self._entity = entity
 
     self._filters = set()
+    self._ancestor = None
     self._cursor = None
     self._limit = None
     self._order = None
@@ -228,7 +231,12 @@ class _EndpointsQueryInfo(object):
 
     self._PopulateFilters()
 
-    query = self._entity.query()  # Calls classmethod
+    # _entity.query calls the classmethod for the entity
+    if self.ancestor is not None:
+      query = self._entity.query(ancestor=self.ancestor)
+    else:
+      query = self._entity.query()
+
     for simple_filter in self._filters:
       query = query.filter(simple_filter)
     for order_attr in self._order_attrs:
@@ -264,6 +272,32 @@ class _EndpointsQueryInfo(object):
   def query(self):
     """Public getter for the final query on query info."""
     return self._query_final
+
+  def _GetAncestor(self):
+    """Getter to be used for public ancestor property on query info."""
+    return self._ancestor
+
+  def _SetAncestor(self, value):
+    """Setter to be used for public ancestor property on query info.
+
+    Args:
+      value: A potential value for an ancestor.
+
+    Raises:
+      AttributeError: if query on the object is already final.
+      AttributeError: if the ancestor has already been set.
+      TypeError: if the value to be set is not an instance of ndb.Key.
+    """
+    if self._query_final is not None:
+      raise AttributeError('Can\'t set ancestor. Query info is final.')
+
+    if self._ancestor is not None:
+      raise AttributeError('Ancestor can\'t be set twice.')
+    if not isinstance(value, ndb.Key):
+      raise TypeError('Ancestor must be an instance of ndb.Key.')
+    self._ancestor = value
+
+  ancestor = property(fget=_GetAncestor, fset=_SetAncestor)
 
   def _GetCursor(self):
     """Getter to be used for public cursor property on query info."""

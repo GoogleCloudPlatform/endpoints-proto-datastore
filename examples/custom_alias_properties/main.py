@@ -18,7 +18,7 @@ class MyModel(EndpointsModel):
 
   def _IdSet(self, value):
     if not isinstance(value, basestring):
-      raise TypeError('ID must be an string.')
+      raise TypeError('ID must be a string.')
 
     self.key = ndb.Key(MyModel, value)
     self._MergeFromKey()
