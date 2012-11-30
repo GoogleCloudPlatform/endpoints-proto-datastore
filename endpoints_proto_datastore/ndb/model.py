@@ -674,6 +674,20 @@ class EndpointsModel(ndb.Model):
         if current_value is None:
           setattr(self, attr_name, value)
 
+  def _MergeFromKey(self):
+    """Attempts to get current entity by key and update the unset properties.
+
+    Only does anything if the current entity has a key and there is a
+    corresponding entity in the datastore. Calls _CopyFromEntity to merge the
+    current entity with the one that was retrieved. If one was retrieved, sets
+    _from_datastore to True to signal that an entity was retrieved.
+    """
+    if self._key is not None:
+      entity = self._key.get()
+      if entity is not None:
+        self._CopyFromEntity(entity)
+        self._from_datastore = True
+
   def _IdSet(self, value):
     """Setter to be used for default id EndpointsAliasProperty.
 
@@ -693,10 +707,7 @@ class EndpointsModel(ndb.Model):
       raise TypeError('ID must be an integer.')
 
     self._key = ndb.Key(self.__class__, value)
-    entity = self._key.get()
-    if entity is not None:
-      self._CopyFromEntity(entity)
-      self._from_datastore = True
+    self._MergeFromKey()
 
   @EndpointsAliasProperty(property_type=messages.IntegerField,
                           setter=_IdSet, exempt=True)
@@ -733,10 +744,7 @@ class EndpointsModel(ndb.Model):
       raise TypeError('entityKey must be a string.')
 
     self._key = ndb.Key(urlsafe=value)
-    entity = self._key.get()
-    if entity is not None:
-      self._CopyFromEntity(entity)
-      self._from_datastore = True
+    self._MergeFromKey()
 
   @EndpointsAliasProperty(setter=_EntityKeySet, exempt=True)
   def entityKey(self):
