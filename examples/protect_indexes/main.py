@@ -40,7 +40,7 @@ class MyModel(EndpointsModel):
                audiences=[endpoints.API_EXPLORER_CLIENT_ID])
 class MyApi(remote.Service):
 
-  @MyModel.method(request_ordering=('attr1', 'attr2'),
+  @MyModel.method(request_fields=('attr1', 'attr2'),
                   user_required=True,
                   path='mymodel', http_method='POST', name='mymodel.insert')
   def MyModelInsert(self, my_model):
@@ -48,7 +48,7 @@ class MyApi(remote.Service):
     my_model.put()
     return my_model
 
-  @MyModel.query_method(query_ordering=('limit', 'order', 'pageToken'),
+  @MyModel.query_method(query_fields=('limit', 'order', 'pageToken'),
                         user_required=True,
                         path='mymodels', name='mymodel.list')
   def MyModelList(self, query):

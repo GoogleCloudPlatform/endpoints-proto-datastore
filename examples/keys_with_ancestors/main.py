@@ -9,7 +9,7 @@ from endpoints_proto_datastore.ndb import EndpointsModel
 
 
 class MyParent(EndpointsModel):
-  _ordering = ('name',)
+  _default_fields = ('name',)
 
   updated = ndb.DateTimeProperty(auto_now=True)
 
@@ -103,7 +103,7 @@ class MyApi(remote.Service):
     my_model.put()
     return my_model
 
-  @MyModel.query_method(query_ordering=('parent',),
+  @MyModel.query_method(query_fields=('parent',),
                         path='mymodels/{parent}', name='mymodel.list')
   def MyModelList(self, query):
     return query

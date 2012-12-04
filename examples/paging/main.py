@@ -20,7 +20,7 @@ class MyApi(remote.Service):
     my_model.put()
     return my_model
 
-  @MyModel.query_method(query_ordering=('limit', 'order', 'pageToken'),
+  @MyModel.query_method(query_fields=('limit', 'order', 'pageToken'),
                         path='mymodels', name='mymodel.list')
   def MyModelList(self, query):
     return query

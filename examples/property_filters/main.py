@@ -20,7 +20,7 @@ class MyApi(remote.Service):
     my_model.put()
     return my_model
 
-  @MyModel.query_method(query_ordering=('attr1', 'attr2'),
+  @MyModel.query_method(query_fields=('attr1', 'attr2'),
                         path='mymodels', name='mymodel.list')
   def MyModelList(self, query):
     return query

@@ -43,7 +43,7 @@ HTTP_METHOD = 'http_method'
 QUERY_HTTP_METHOD = 'GET'
 
 EndpointsAliasProperty = properties.EndpointsAliasProperty
-MessageOrdering = utils.MessageOrdering
+MessageFieldsSchema = utils.MessageFieldsSchema
 
 
 def _VerifyProperty(modelclass, attr_name):
@@ -403,7 +403,7 @@ class _EndpointsQueryInfo(object):
     errors or data changed.
 
     Args:
-      value: A potential value for a order.
+      value: A potential value for an order.
 
     Raises:
       AttributeError: if query on the object is already final.
@@ -445,7 +445,7 @@ class EndpointsMetaModel(ndb.MetaModel):
 
     cls._FixUpAliasProperties()
 
-    cls._VerifyOrdering(classdict)
+    cls._VerifyDefaultFields(classdict)
     cls._VerifyProtoMapping(classdict)
 
   def _FixUpAliasProperties(cls):
@@ -468,38 +468,36 @@ class EndpointsMetaModel(ndb.MetaModel):
         prop._FixUp(attr_name)
         cls._alias_properties[prop._name] = prop
 
-  def _VerifyOrdering(cls, classdict):
-    """Verifies that the preset ordering corresponds to actual properties.
+  def _VerifyDefaultFields(cls, classdict):
+    """Verifies that the preset default fields correspond to actual properties.
 
-    If no ordering was set on the class, sets the class ordering to the default
-    ordering on the class.
+    If no default fields were set on the class, sets the default fields using
+    the non-exempt properties.
 
-    In either case, converts the passed in ordering to an instance of
-       MessageOrdering and sets that as the value of _ordering on the class.
+    In either case, converts the passed in default fields to an instance of
+       MessageFieldsSchema and sets that as the value of _default_fields
+       on the class.
 
     Args:
       classdict: A dictionary of new attributes defined on the class (not on
           any subclass).
 
     Raises:
-      TypeError: if an ordering was set on the class that was not a dictionary,
-          list, tuple or MessageOrdering instance.
+      TypeError: if default fields was set on the class that was not a list,
+          tuple, dictionary, or MessageFieldsSchema instance.
     """
-    ordering = classdict.get('_ordering')
-    if ordering is None:
-      default_ordering = cls._DefaultOrdering()
-      cls._ordering = MessageOrdering(default_ordering, name=cls.__name__)
-      return
+    default_fields = classdict.get('_default_fields')
+    if default_fields is None:
+      default_fields = cls._DefaultFields()
+    elif isinstance(default_fields, (dict, list, tuple, MessageFieldsSchema)):
+      for attr in default_fields:
+        _VerifyProperty(cls, attr)
+    else:
+      raise TypeError('Model %s has bad default fields type: %s. Only a list, '
+                      'tuple, dictionary or MessageFieldsSchema are allowed.' %
+                      (cls.__name__, default_fields.__class__.__name__))
 
-    if not isinstance(ordering, (dict, list, tuple, MessageOrdering)):
-      raise TypeError('Model %s has bad ordering type: %s. Only a dictionary, '
-                      'list, tuple or MessageOrdering are allowed.' %
-                      (cls.__name__, ordering.__class__.__name__))
-
-    for attr in ordering:
-      _VerifyProperty(cls, attr)
-
-    cls._ordering = MessageOrdering(ordering, name=cls.__name__)
+    cls._default_fields = MessageFieldsSchema(default_fields, name=cls.__name__)
 
   def _VerifyProtoMapping(cls, classdict):
     """Verifies that each property on the class has an associated proto mapping.
@@ -625,26 +623,26 @@ class EndpointsModel(ndb.Model):
   "method" decorator provided by a model class expects an instance of that class
   both as input and output. In order to deserialize the ProtoRPC input to an
   entity and serialize the entity returned by the decorated method back to
-  ProtoRPC, request and response orderings can be specified which the Endpoints
+  ProtoRPC, request and response fields can be specified which the Endpoints
   model class can use to create (and cache) corresponding ProtoRPC message
   classes.
 
   Similarly, a method decorated with the query_method decorator expects a query
   for the EndpointsModel subclass both as input and output. Instead of
-  specifying request/response orderings for entities, a query and collection
-  ordering can be used.
+  specifying request/response fields for entities, a query and collection fields
+  list can be used.
 
-  When no ordering is provided, a default ordering from the class is used. This
-  can be overridden by setting the class variable _ordering to a dictionary,
-  list, tuple or MessageOrdering of your choice. If none is provided, the
-  default will include all NDB properties and all Endpoints Alias properties
-  which are not marked as exempt.
+  When no fields are provided, the default fields from the class are used. This
+  can be overridden by setting the class variable _default_fields to a
+  dictionary, list, tuple or MessageFieldsSchema of your choice. If none is
+  provided, the default will include all NDB properties and all Endpoints Alias
+  properties which are not marked as exempt.
   """
 
   __metaclass__ = EndpointsMetaModel
 
   _custom_property_to_proto = None
-  _ordering = None
+  _default_fields = None
 
   # A new instance of each of these will be created by the metaclass
   # every time a subclass is declared
@@ -668,16 +666,17 @@ class EndpointsModel(ndb.Model):
 
   @property
   def from_datastore(self):
+    """Property accessor that represents if the entity is from the datastore."""
     return self._from_datastore
 
   @classmethod
-  def _DefaultOrdering(cls):
-    """The default ordering for the class using the non-exempt properties."""
-    ordering = cls._properties.keys()
+  def _DefaultFields(cls):
+    """The default fields for the class using the non-exempt properties."""
+    fields = cls._properties.keys()
     for prop_name, prop in cls._alias_properties.iteritems():
       if not prop._exempt:
-        ordering.append(prop_name)
-    return ordering
+        fields.append(prop_name)
+    return fields
 
   def _CopyFromEntity(self, entity):
     """Copies properties from another entity to the current one.
@@ -896,53 +895,53 @@ class EndpointsModel(ndb.Model):
     return itertools.chain(property_values, alias_values)
 
   @classmethod
-  def ProtoModel(cls, ordering=None, allow_message_fields=True):
+  def ProtoModel(cls, fields=None, allow_message_fields=True):
     """Creates a ProtoRPC message class using a subset of the class properties.
 
-    Creates a MessageOrdering from the passed in ordering (may cause exception
-    if not valid). If this MessageOrdering is already in the cache of models,
-    returns the cached value.
+    Creates a MessageFieldsSchema from the passed in fields (may cause exception
+    if not valid). If this MessageFieldsSchema is already in the cache of
+    models, returns the cached value.
 
     If not, verifies that each property is valid (may cause exception) and then
     uses the proto mapping to create the corresponding ProtoRPC field. Using the
-    created fields and the name from the MessageOrdering, creates a new ProtoRPC
-    message class by calling the type() constructor.
+    created fields and the name from the MessageFieldsSchema, creates a new
+    ProtoRPC message class by calling the type() constructor.
 
     Before returning it, it caches the newly created ProtoRPC message class.
 
     Args:
-      ordering: Optional ordering, defaults to None. If None, the default from
+      fields: Optional fields, defaults to None. If None, the default from
           the class is used. If specified, will be converted to a
-          MessageOrdering object (and verified as such).
+          MessageFieldsSchema object (and verified as such).
       allow_message_fields: An optional boolean; defaults to True. If True, does
           nothing. If False, stops ProtoRPC message classes that have one or
           more ProtoRPC {MessageField}s from being created.
 
     Returns:
-      The cached or created ProtoRPC message class specified by the ordering.
+      The cached or created ProtoRPC message class specified by the fields.
 
     Raises:
       AttributeError: if a verified property has no proto mapping registered.
           This is a serious error and should not occur due to what happens in
           the metaclass.
       TypeError: if a value from the proto mapping is not a ProtoRPC field or a
-          callable method (which takes a propery and an index).
+          callable method (which takes a property and an index).
       TypeError: if a proto mapping results in a ProtoRPC MessageField while
           message fields are explicitly disallowed by having
           allow_message_fields set to False.
     """
-    if ordering is None:
-      ordering = cls._ordering
-    # If ordering is None, either the module user manaully removed the default
+    if fields is None:
+      fields = cls._default_fields
+    # If fields is None, either the module user manaully removed the default
     # value or some bug has occurred in the library
-    message_ordering = MessageOrdering(ordering,
-                                       basename=cls.__name__ + 'Proto')
+    message_fields_schema = MessageFieldsSchema(fields,
+                                                basename=cls.__name__ + 'Proto')
 
-    if message_ordering in cls._proto_models:
-      return cls._proto_models[message_ordering]
+    if message_fields_schema in cls._proto_models:
+      return cls._proto_models[message_fields_schema]
 
     message_fields = {}
-    for index, name in enumerate(message_ordering):
+    for index, name in enumerate(message_fields_schema):
       field_index = index + 1
       prop = _VerifyProperty(cls, name)
       to_proto = cls._property_to_proto.get(prop.__class__)
@@ -972,87 +971,87 @@ class EndpointsModel(ndb.Model):
 
     # TODO(dhermes): This behavior should be regulated more directly.
     #                This is to make sure the schema name in the discovery
-    #                document is message_ordering.name rather than
-    #                EndpointsProtoDatastoreNdbModel{message_ordering.name}
+    #                document is message_fields_schema.name rather than
+    #                EndpointsProtoDatastoreNdbModel{message_fields_schema.name}
     message_fields['__module__'] = ''
-    message_class = type(message_ordering.name,
+    message_class = type(message_fields_schema.name,
                          (messages.Message,),
                          message_fields)
 
-    cls._proto_models[message_ordering] = message_class
+    cls._proto_models[message_fields_schema] = message_class
     return message_class
 
   @classmethod
-  def ProtoCollection(cls, collection_ordering=None):
+  def ProtoCollection(cls, collection_fields=None):
     """Creates a ProtoRPC message class using a subset of the class properties.
 
     In contrast to ProtoModel, this creates a collection with only two fields:
     items and nextPageToken. The field nextPageToken is used for paging through
     result sets, while the field items is a repeated ProtoRPC MessageField used
-    to hold the query results. The ordering passed in is used to specify the
+    to hold the query results. The fields passed in are used to specify the
     ProtoRPC message class set on the MessageField.
 
-    As with ProtoModel, creates a MessageOrdering from the passed in ordering,
-    checks if this MessageOrdering is already in the cache of collections, and
-    returns the cached value if it exists.
+    As with ProtoModel, creates a MessageFieldsSchema from the passed in fields,
+    checks if this MessageFieldsSchema is already in the cache of collections,
+    and returns the cached value if it exists.
 
-    If not, will call ProtoModel with the collection_ordering passed in to set
+    If not, will call ProtoModel with the collection_fields passed in to set
     the ProtoRPC message class on the items MessageField.
 
     Before returning it, it caches the newly created ProtoRPC message class in a
     cache of collections.
 
     Args:
-      collection_ordering: Optional ordering, defaults to None. If None, the
+      collection_fields: Optional fields, defaults to None. If None, the
           default from the class is used. If specified, will be converted to a
-          MessageOrdering object (and verified as such).
+          MessageFieldsSchema object (and verified as such).
 
     Returns:
       The cached or created ProtoRPC (collection) message class specified by
-          the ordering.
+          the fields.
     """
-    if collection_ordering is None:
-      collection_ordering = cls._ordering
-    message_ordering = MessageOrdering(collection_ordering,
-                                       basename=cls.__name__ + 'Proto')
+    if collection_fields is None:
+      collection_fields = cls._default_fields
+    message_fields_schema = MessageFieldsSchema(collection_fields,
+                                                basename=cls.__name__ + 'Proto')
 
-    if message_ordering in cls._proto_collections:
-      return cls._proto_collections[message_ordering]
+    if message_fields_schema in cls._proto_collections:
+      return cls._proto_collections[message_fields_schema]
 
-    proto_model = cls.ProtoModel(ordering=message_ordering)
+    proto_model = cls.ProtoModel(fields=message_fields_schema)
 
     message_fields = {
         'items': messages.MessageField(proto_model, 1, repeated=True),
         'nextPageToken': messages.StringField(2),
         # TODO(dhermes): This behavior should be regulated more directly.
         #                This is to make sure the schema name in the discovery
-        #                document is message_ordering.collection_name
+        #                document is message_fields_schema.collection_name
         '__module__': '',
     }
-    collection_class = type(message_ordering.collection_name,
+    collection_class = type(message_fields_schema.collection_name,
                             (messages.Message,),
                             message_fields)
-    cls._proto_collections[message_ordering] = collection_class
+    cls._proto_collections[message_fields_schema] = collection_class
     return collection_class
 
-  def ToMessage(self, ordering=None):
+  def ToMessage(self, fields=None):
     """Converts an entity to an ProtoRPC message.
 
-    Uses the ordering to create a ProtoRPC message class and then converts the
-    relevant fields from the entity using ToValue.
+    Uses the fields list passed in to create a ProtoRPC message class and then
+    converts the relevant fields from the entity using ToValue.
 
     Args:
-      ordering: Optional ordering, defaults to None. Passed to ProtoModel to
-          create a ProtoRPC message class for for the message.
+      fields: Optional fields, defaults to None. Passed to ProtoModel to
+          create a ProtoRPC message class for the message.
 
     Returns:
       The ProtoRPC message created using the values from the entity and the
-          ordering provided for the message class.
+          fields provided for the message class.
 
     Raises:
       TypeError: if a repeated field has a value which is not a tuple or list.
     """
-    proto_model = self.ProtoModel(ordering=ordering)
+    proto_model = self.ProtoModel(fields=fields)
 
     proto_args = {}
     for field in proto_model.all_fields():
@@ -1149,30 +1148,31 @@ class EndpointsModel(ndb.Model):
     return entity
 
   @classmethod
-  def ToMessageCollection(cls, items, collection_ordering=None,
+  def ToMessageCollection(cls, items, collection_fields=None,
                           next_cursor=None):
     """Converts a list of entities and cursor to ProtoRPC (collection) message.
 
-    Uses the ordering to create a ProtoRPC (collection) message class and then
-    converts each item into a ProtoRPC message to be set as a list of items.
+    Uses the fields list to create a ProtoRPC (collection) message class and
+    then converts each item into a ProtoRPC message to be set as a list of
+    items.
 
     If the cursor is not null, we convert it to a websafe string and set the
     nextPageToken field on the result message.
 
     Args:
       items: A list of entities of this model.
-      collection_ordering: Optional ordering, defaults to None. Passed to
+      collection_fields: Optional fields, defaults to None. Passed to
           ProtoCollection to create a ProtoRPC message class for for the
           collection of messages.
       next_cursor: An optional query cursor, defaults to None.
 
     Returns:
       The ProtoRPC message created using the entities and cursor provided,
-          making sure that the entity message class matches collection_ordering.
+          making sure that the entity message class matches collection_fields.
     """
-    proto_model = cls.ProtoCollection(collection_ordering=collection_ordering)
+    proto_model = cls.ProtoCollection(collection_fields=collection_fields)
 
-    items_as_message = [item.ToMessage(ordering=collection_ordering)
+    items_as_message = [item.ToMessage(fields=collection_fields)
                         for item in items]
     result = proto_model(items=items_as_message)
 
@@ -1184,8 +1184,8 @@ class EndpointsModel(ndb.Model):
   @classmethod
   @utils.positional(1)
   def method(cls,
-             request_ordering=None,
-             response_ordering=None,
+             request_fields=None,
+             response_fields=None,
              user_required=False,
              **kwargs):
     """Creates an API method decorator using provided metadata.
@@ -1193,15 +1193,15 @@ class EndpointsModel(ndb.Model):
     Augments the endpoints.method decorator-producing function by allowing
     API methods to receive and return a class instance rather than having to
     worry with ProtoRPC messages (and message class definition). By specifying
-    an ordering of ProtoRPC fields rather than defining the class, response
-    and request classes can be defined on the fly.
+    a list of ProtoRPC fields rather than defining the class, response and
+    request classes can be defined on the fly.
 
-    If there is any collision between request/response ordering and potential
+    If there is any collision between request/response field lists and potential
     custom request/response message definitions that can be passed to the
     endpoints.method decorator, this call will fail.
 
     All other arguments will be passed directly to the endpoints.method
-    decorator-producing function. If request/response ordering are used to
+    decorator-producing function. If request/response field lists are used to
     define custom classes, the newly defined classes will also be passed to
     endpoints.method as the keyword arguments request_message/response_message.
 
@@ -1217,12 +1217,12 @@ class EndpointsModel(ndb.Model):
     endpoints.method decorator function that we mean to pass metadata to.
 
     Args:
-      request_ordering: An (optional) list, tuple, dictionary or MessageOrdering
-          that defines a field ordering in a ProtoRPC message class. Defaults to
-          None.
-      response_ordering: An (optional) list, tuple, dictionary or
-          MessageOrdering that defines a field ordering in a ProtoRPC message
-          class. Defaults to None.
+      request_fields: An (optional) list, tuple, dictionary or
+          MessageFieldsSchema that defines a field ordering in a ProtoRPC
+          message class. Defaults to None.
+      response_fields: An (optional) list, tuple, dictionary or
+          MessageFieldsSchema that defines a field ordering in a ProtoRPC
+          message class. Defaults to None.
       user_required: Boolean; indicates whether or not a user is required on any
           incoming request.
 
@@ -1231,21 +1231,21 @@ class EndpointsModel(ndb.Model):
 
     Raises:
       TypeError: if there is a collision (either request or response) of
-          ordering and custom message definition.
+          field list and custom message definition.
     """
     request_message = kwargs.get(REQUEST_MESSAGE)
-    if request_ordering is not None and request_message is not None:
-      raise TypeError('Received both a request message class and an ordering '
+    if request_fields is not None and request_message is not None:
+      raise TypeError('Received both a request message class and a field list '
                       'for creating a request message class.')
     if request_message is None:
-      kwargs[REQUEST_MESSAGE] = cls.ProtoModel(ordering=request_ordering)
+      kwargs[REQUEST_MESSAGE] = cls.ProtoModel(fields=request_fields)
 
     response_message = kwargs.get(RESPONSE_MESSAGE)
-    if response_ordering is not None and response_message is not None:
-      raise TypeError('Received both a response message class and an ordering '
+    if response_fields is not None and response_message is not None:
+      raise TypeError('Received both a response message class and a field list '
                       'for creating a response message class.')
     if response_message is None:
-      kwargs[RESPONSE_MESSAGE] = cls.ProtoModel(ordering=response_ordering)
+      kwargs[RESPONSE_MESSAGE] = cls.ProtoModel(fields=response_fields)
 
     apiserving_method_decorator = endpoints.method(**kwargs)
 
@@ -1290,22 +1290,23 @@ class EndpointsModel(ndb.Model):
           raise endpoints.UnauthorizedException('Invalid token.')
 
         if request_message is None:
-          # If we are using an ordering, we can convert the message to an
+          # If we are using a fields list, we can convert the message to an
           # instance of the current class
           request = cls.FromMessage(request)
 
-        # If developers are using a request ordering to create a request message
+        # If developers are using request_fields to create a request message
         # class for them, their method should expect to receive an instance of
         # the current EndpointsModel class, and if it fails for some reason
         # their API users will receive a 503 from an uncaught exception.
         response = api_method(service_instance, request)
 
         if response_message is None:
-          # If developers using a custom request message class with a response
-          # ordering to create a response message class for them, it is up to
-          # them to return an instance of the current EndpointsModel class. If
-          # not, their API users will receive a 503 from an uncaught exception.
-          response = response.ToMessage(ordering=response_ordering)
+          # If developers using a custom request message class with
+          # response_fields to create a response message class for them, it is
+          # up to them to return an instance of the current EndpointsModel
+          # class. If not, their API users will receive a 503 from an uncaught
+          # exception.
+          response = response.ToMessage(fields=response_fields)
 
         return response
 
@@ -1316,8 +1317,8 @@ class EndpointsModel(ndb.Model):
   @classmethod
   @utils.positional(1)
   def query_method(cls,
-                   query_ordering=(),
-                   collection_ordering=None,
+                   query_fields=(),
+                   collection_fields=None,
                    limit_default=QUERY_LIMIT_DEFAULT,
                    limit_max=QUERY_LIMIT_MAX,
                    user_required=False,
@@ -1335,19 +1336,19 @@ class EndpointsModel(ndb.Model):
     object on the entity will allow conversion into a query and the decorator
     will execute this query.
 
-    Rather than request/response ordering (as in "method"), we require that
-    callers specify a query ordering -- which will produce the entity before it
-    is converted to a query -- and a collection ordering -- which will be passed
+    Rather than request/response fields (as in "method"), we require that
+    callers specify query fields -- which will produce the entity before it
+    is converted to a query -- and collection fields -- which will be passed
     to ProtoCollection to create a container class for items returned by the
     query.
 
     In contrast to "method", no custom request/response message classes can be
     passed in, the queries and collection responses can only be specified by the
-    ordering of properties. THIS IS SUBJECT TO CHANGE.
+    query/collection fields. THIS IS SUBJECT TO CHANGE.
 
     All other arguments will be passed directly to the endpoints.method
     decorator-producing function. The custom classes defined by the
-    query/collection ordering will also be passed to endpoints.method as the
+    query/collection fields will also be passed to endpoints.method as the
     keyword arguments request_message/response_message.
 
     Custom {EndpointsAliasProperty}s have been defined that allow for
@@ -1364,12 +1365,12 @@ class EndpointsModel(ndb.Model):
     endpoints.method decorator function that we mean to pass metadata to.
 
     Args:
-      query_ordering: An (optional) list, tuple, dictionary or MessageOrdering
-          that defines a field ordering in a ProtoRPC message class. Defaults to
+      query_fields: An (optional) list, tuple, dictionary or MessageFieldsSchema
+          that define a field ordering in a ProtoRPC message class. Defaults to
           an empty tuple, which results in a simple datastore query of the kind.
-      collection_ordering: An (optional) list, tuple, dictionary or
-          MessageOrdering that defines a field ordering in a ProtoRPC message
-          class. Defaults to None.
+      collection_fields: An (optional) list, tuple, dictionary or
+          MessageFieldsSchema that define a field ordering in a ProtoRPC
+          message class. Defaults to None.
       limit_default: An (optional) default value for the amount of items to
           fetch in a query. Defaults to the global QUERY_LIMIT_DEFAULT.
       limit_max: An (optional) max value for the amount of items to
@@ -1377,7 +1378,7 @@ class EndpointsModel(ndb.Model):
       user_required: Boolean; indicates whether or not a user is required on any
           incoming request. Defaults to False.
       use_projection: Boolean; indicates whether or the query should retrieve
-          entire entities or just a projection using the collection ordering.
+          entire entities or just a projection using the collection fields.
           Defaults to False. If used, all properties in a projection must be
           indexed, so this should be used with care. However, when used
           correctly, this will speed up queries, reduce payload size and even
@@ -1396,16 +1397,16 @@ class EndpointsModel(ndb.Model):
     if REQUEST_MESSAGE in kwargs:
       raise TypeError('Received a request message class on a method intended '
                       'for queries. This is explicitly not allowed. Only '
-                      'query_ordering can be specified.')
-    kwargs[REQUEST_MESSAGE] = cls.ProtoModel(ordering=query_ordering,
+                      'query_fields can be specified.')
+    kwargs[REQUEST_MESSAGE] = cls.ProtoModel(fields=query_fields,
                                              allow_message_fields=False)
 
     if RESPONSE_MESSAGE in kwargs:
       raise TypeError('Received a response message class on a method intended '
                       'for queries. This is explicitly not allowed. Only '
-                      'collection_ordering can be specified.')
+                      'collection_fields can be specified.')
     kwargs[RESPONSE_MESSAGE] = cls.ProtoCollection(
-        collection_ordering=collection_ordering)
+        collection_fields=collection_fields)
 
     # Only allow GET for queries
     if HTTP_METHOD in kwargs:
@@ -1474,7 +1475,7 @@ class EndpointsModel(ndb.Model):
 
         query_options = {'start_cursor': query_info.cursor}
         if use_projection:
-          projection = [value for value in collection_ordering
+          projection = [value for value in collection_fields
                         if value in cls._properties]
           query_options['projection'] = projection
         items, next_cursor, more_results = query.fetch_page(
@@ -1485,7 +1486,7 @@ class EndpointsModel(ndb.Model):
           next_cursor = None
 
         return cls.ToMessageCollection(items,
-                                       collection_ordering=collection_ordering,
+                                       collection_fields=collection_fields,
                                        next_cursor=next_cursor)
 
       return apiserving_method_decorator(QueryFromRequestMethod)

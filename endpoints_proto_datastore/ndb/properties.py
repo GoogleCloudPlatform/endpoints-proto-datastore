@@ -120,7 +120,7 @@ class EndpointsAliasProperty(property):
           this property is required in a message class.
       _repeated: A boolean attribute for ProtoRPC conversion, denoting whether
           this property is repeated in a message class.
-      _exempt: A boolean attribute used when creating a default ordering for a
+      _exempt: A boolean attribute used when creating default fields for a
           model. Alias properties marked as exempt will not be included in a
           default.
       _name: The true name of the property.
@@ -148,7 +148,7 @@ class EndpointsAliasProperty(property):
           instance if not None. Will be validated when a corresponding message
           field is created.
       exempt: Optional boolean, defaults to False. If set, indicates that the
-          alias property should not be included in the default ordering.
+          alias property should not be included in the default fields.
       name: A custom name that can be used to describe the property.
       variant: A variant of that can be used to augment the ProtoRPC field. Will
           be validated when a corresponding message field is created.

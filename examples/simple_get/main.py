@@ -7,7 +7,7 @@ from endpoints_proto_datastore.ndb import EndpointsModel
 
 
 class MyModel(EndpointsModel):
-  _ordering = ('id', 'attr1', 'attr2', 'created')
+  _default_fields = ('id', 'attr1', 'attr2', 'created')
 
   attr1 = ndb.StringProperty()
   attr2 = ndb.StringProperty()
@@ -22,7 +22,7 @@ class MyApi(remote.Service):
     my_model.put()
     return my_model
 
-  @MyModel.method(request_ordering=('id',),
+  @MyModel.method(request_fields=('id',),
                   path='mymodel/{id}', http_method='GET', name='mymodel.get')
   def MyModelGet(self, my_model):
     if not my_model.from_datastore:

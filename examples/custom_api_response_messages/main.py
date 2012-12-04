@@ -20,8 +20,8 @@ class MyModel(EndpointsModel):
 @endpoints.api(name='myapi', version='v1', description='My Little API')
 class MyApi(remote.Service):
 
-  @MyModel.method(request_ordering=('attr1',),
-                  response_ordering=('created',),
+  @MyModel.method(request_fields=('attr1',),
+                  response_fields=('created',),
                   path='mymodel',
                   http_method='POST',
                   name='mymodel.insert')
@@ -30,7 +30,7 @@ class MyApi(remote.Service):
     my_model.put()
     return my_model
 
-  @MyModel.query_method(collection_ordering=('attr2', 'created'),
+  @MyModel.query_method(collection_fields=('attr2', 'created'),
                         path='mymodels', name='mymodel.list')
   def MyModelList(self, query):
     return query

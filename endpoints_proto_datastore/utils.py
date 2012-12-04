@@ -6,7 +6,7 @@ The methods here are not specific to NDB or DB (the datastore APIs) and can
 be used by utility methods in the datastore API specific code.
 """
 
-__all__ = ['GeoPtMessage', 'MessageOrdering', 'UserMessage',
+__all__ = ['GeoPtMessage', 'MessageFieldsSchema', 'UserMessage',
            'method', 'positional', 'query_method']
 
 
@@ -94,83 +94,85 @@ def CheckValidPropertyType(property_type, raise_invalid=True):
   return is_valid
 
 
-def _DictToTuple(ordering):
+def _DictToTuple(to_sort):
   """Converts a dictionary into a tuple of keys sorted by values.
 
   Args:
-    ordering: A dictionary like object that has a callable items method.
+    to_sort: A dictionary like object that has a callable items method.
 
   Returns:
     A tuple containing the dictionary keys, sorted by value.
   """
-  items = ordering.items()
+  items = to_sort.items()
   items.sort(key=lambda pair: pair[1])
   return tuple(pair[0] for pair in items)
 
 
-class MessageOrdering(object):
+class MessageFieldsSchema(object):
   """A custom dictionary which is hashable.
 
   Intended to be used so either dictionaries or lists can be used to define
   field index orderings of a ProtoRPC message classes. Since hashable, we can
-  cache these ProtoRPC message class definitions using the ordering as a key.
+  cache these ProtoRPC message class definitions using the fields schema
+  as a key.
 
   These objects can be used as if they were dictionaries in many contexts and
   can be compared for equality by hash.
   """
 
-  def __init__(self, ordering, name=None, collection_name=None, basename=''):
+  def __init__(self, fields, name=None, collection_name=None, basename=''):
     """Save list/tuple or convert dictionary a list based on value ordering.
 
     Attributes:
-      name: A name for the ordering.
-      collection_name: A name for collections using the ordering.
+      name: A name for the fields schema.
+      collection_name: A name for collections using the fields schema.
       _data: The underlying dictionary holding the data for the instance.
 
     Args:
-      ordering: A dictionary or ordered iterable which defines an index ordering
+      fields: A dictionary or ordered iterable which defines an index ordering
           for fields in a ProtoRPC message class
-      name: A name for the ordering, defaults to None. If None, uses the names
-          in the ordering in the order they appear. If the ordering passed in is
-          an instance of MessageOrdering, this is ignored.
-      collection_name: A name for collections containing the ordering, defaults
-          to None. If None, uses the name and appends the string 'Collection'.
-      basename: A basename for the default ordering name, defaults to the empty
-          string. If the ordering passed in is an instance of MessageOrdering,
-          this is ignored.
+      name: A name for the fields schema, defaults to None. If None, uses the
+          names in the fields in the order they appear. If the fields schema
+          passed in is an instance of MessageFieldsSchema, this is ignored.
+      collection_name: A name for collections containing the fields schema,
+          defaults to None. If None, uses the name and appends the string
+          'Collection'.
+      basename: A basename for the default fields schema name, defaults to the
+          empty string. If the fields passed in is an instance of
+          MessageFieldsSchema, this is ignored.
 
     Raises:
-      TypeError: if the ordering passed in is not a dictionary, tuple, list or
-          existing MessageOrdering instance.
+      TypeError: if the fields passed in are not a dictionary, tuple, list or
+          existing MessageFieldsSchema instance.
     """
-    if isinstance(ordering, MessageOrdering):
-      self._data = ordering._data
-      name = ordering.name
-      collection_name = ordering.collection_name
-    elif isinstance(ordering, dict):
-      self._data = _DictToTuple(ordering)
-    elif isinstance(ordering, (list, tuple)):
-      self._data = tuple(ordering)
+    if isinstance(fields, MessageFieldsSchema):
+      self._data = fields._data
+      name = fields.name
+      collection_name = fields.collection_name
+    elif isinstance(fields, dict):
+      self._data = _DictToTuple(fields)
+    elif isinstance(fields, (list, tuple)):
+      self._data = tuple(fields)
     else:
-      error_msg = ('Can\'t create MessageOrdering from an object of type %s. '
-                   'Must be a dictionary or iterable.' % (ordering.__class__,))
+      error_msg = ('Can\'t create MessageFieldsSchema from object of type %s. '
+                   'Must be a dictionary or iterable.' % (fields.__class__,))
       raise TypeError(error_msg)
 
     self.name = name or self._DefaultName(basename=basename)
     self.collection_name = collection_name or (self.name + 'Collection')
 
   def _DefaultName(self, basename=''):
-    """The default name of the ordering.
+    """The default name of the fields schema.
 
     Can potentially use a basename at the front, but otherwise uses the instance
-    ordering and joins all the values together using an underscore.
+    fields and joins all the values together using an underscore.
 
     Args:
       basename: An optional string, defaults to the empty string. If not empty,
           is used at the front of the default name.
 
     Returns:
-      A string containing the default name of the ordering.
+      A string containing the default name of the fields schema.
     """
     name_parts = []
     if basename:
@@ -192,8 +194,8 @@ class MessageOrdering(object):
     """Unique and idempotent hash.
 
     Uses a the property list (_data) which is uniquely defined by its elements
-    and their sort order, the name of the ordering and the collection name of
-    the ordering.
+    and their sort order, the name of the fields schema and the collection name
+    of the fields schema.
 
     Returns:
       Integer hash value.
