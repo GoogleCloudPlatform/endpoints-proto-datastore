@@ -20,8 +20,8 @@ class MyParent(EndpointsModel):
     self.key = ndb.Key(MyParent, value)
     self._MergeFromKey()
 
-  @EndpointsAliasProperty(property_type=messages.StringField,
-                          setter=NameSet, required=True)
+  @EndpointsAliasProperty(setter=NameSet, required=True,
+                          property_type=messages.StringField)
   def name(self):
     if self.key is not None:
       return self.key.string_id()
@@ -60,8 +60,8 @@ class MyModel(EndpointsModel):
     # For query
     self._endpoints_query_info.ancestor = ndb.Key(MyParent, value)
 
-  @EndpointsAliasProperty(property_type=messages.StringField,
-                          setter=ParentSet, required=True)
+  @EndpointsAliasProperty(setter=ParentSet, required=True,
+                          property_type=messages.StringField)
   def parent(self):
     if self._parent is None:
       self.SetParts()
@@ -74,8 +74,8 @@ class MyModel(EndpointsModel):
     self._id = value
     self.SetKey()
 
-  @EndpointsAliasProperty(property_type=messages.StringField,
-                          setter=IdSet, required=True)
+  @EndpointsAliasProperty(setter=IdSet, required=True,
+                          property_type=messages.StringField)
   def id(self):
     if self._id is None:
       self.SetParts()

@@ -19,18 +19,18 @@ class MyModel(EndpointsModel):
   owner = ndb.UserProperty(required=True)
   created = ndb.DateTimeProperty(auto_now_add=True)
 
-  def _OrderSet(self, value):
+  def OrderSet(self, value):
     if not isinstance(value, Order):
       raise TypeError('Expected an enum, received: %s.' % (value,))
 
     if value == Order.MYFIRST:
-      super(MyModel, self)._OrderSet('attr1')
+      super(MyModel, self).OrderSet('attr1')
     elif value == Order.MYSECOND:
-      super(MyModel, self)._OrderSet('-attr2')
+      super(MyModel, self).OrderSet('-attr2')
     else:
       raise TypeError('Unexpected value of Order: %s.' % (value,))
 
-  @EndpointsAliasProperty(property_type=Order, setter=_OrderSet,
+  @EndpointsAliasProperty(setter=OrderSet, property_type=Order,
                           default=Order.MYFIRST, exempt=True)
   def order(self):
     return super(MyModel, self).order

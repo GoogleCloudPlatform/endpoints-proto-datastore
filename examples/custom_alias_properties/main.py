@@ -16,20 +16,20 @@ class MyModel(EndpointsModel):
   attr2 = ndb.StringProperty()
   created = ndb.DateTimeProperty(auto_now_add=True)
 
-  def _IdSet(self, value):
+  def IdSet(self, value):
     if not isinstance(value, basestring):
       raise TypeError('ID must be a string.')
 
     self.key = ndb.Key(MyModel, value)
     self._MergeFromKey()
 
-  @EndpointsAliasProperty(property_type=messages.StringField,
-                          setter=_IdSet, required=True)
+  @EndpointsAliasProperty(setter=IdSet, required=True,
+                          property_type=messages.StringField)
   def id(self):
     if self.key is not None:
       return self.key.string_id()
 
-  @EndpointsAliasProperty(setter=EndpointsModel._OrderSet,
+  @EndpointsAliasProperty(setter=EndpointsModel.OrderSet,
                           default=DEFAULT_ORDER, exempt=True)
   def order(self):
     return super(MyModel, self).order

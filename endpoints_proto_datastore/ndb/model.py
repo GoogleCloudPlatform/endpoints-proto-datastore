@@ -722,7 +722,7 @@ class EndpointsModel(ndb.Model):
         self._CopyFromEntity(entity)
         self._from_datastore = True
 
-  def _IdSet(self, value):
+  def IdSet(self, value):
     """Setter to be used for default id EndpointsAliasProperty.
 
     Sets the key on the current entity using the value passed in as the ID.
@@ -743,8 +743,8 @@ class EndpointsModel(ndb.Model):
     self._key = ndb.Key(self.__class__, value)
     self._MergeFromKey()
 
-  @EndpointsAliasProperty(property_type=messages.IntegerField,
-                          setter=_IdSet, exempt=True)
+  @EndpointsAliasProperty(setter=IdSet, exempt=True,
+                          property_type=messages.IntegerField)
   def id(self):
     """Getter to be used for default id EndpointsAliasProperty.
 
@@ -758,7 +758,7 @@ class EndpointsModel(ndb.Model):
     if self._key is not None:
       return self._key.integer_id()
 
-  def _EntityKeySet(self, value):
+  def EntityKeySet(self, value):
     """Setter to be used for default entityKey EndpointsAliasProperty.
 
     Sets the key on the current entity using the urlsafe entity key string.
@@ -780,7 +780,7 @@ class EndpointsModel(ndb.Model):
     self._key = ndb.Key(urlsafe=value)
     self._MergeFromKey()
 
-  @EndpointsAliasProperty(setter=_EntityKeySet, exempt=True)
+  @EndpointsAliasProperty(setter=EntityKeySet, exempt=True)
   def entityKey(self):
     """Getter to be used for default entityKey EndpointsAliasProperty.
 
@@ -793,7 +793,7 @@ class EndpointsModel(ndb.Model):
     if self._key is not None:
       return self._key.urlsafe()
 
-  def _LimitSet(self, value):
+  def LimitSet(self, value):
     """Setter to be used for default limit EndpointsAliasProperty.
 
     Simply sets the limit on the entity's query info object, and the query
@@ -804,8 +804,8 @@ class EndpointsModel(ndb.Model):
     """
     self._endpoints_query_info.limit = value
 
-  @EndpointsAliasProperty(property_type=messages.IntegerField,
-                          setter=_LimitSet, exempt=True)
+  @EndpointsAliasProperty(setter=LimitSet, exempt=True,
+                          property_type=messages.IntegerField)
   def limit(self):
     """Getter to be used for default limit EndpointsAliasProperty.
 
@@ -816,7 +816,7 @@ class EndpointsModel(ndb.Model):
     """
     return self._endpoints_query_info.limit
 
-  def _OrderSet(self, value):
+  def OrderSet(self, value):
     """Setter to be used for default order EndpointsAliasProperty.
 
     Simply sets the order on the entity's query info object, and the query
@@ -827,7 +827,7 @@ class EndpointsModel(ndb.Model):
     """
     self._endpoints_query_info.order = value
 
-  @EndpointsAliasProperty(setter=_OrderSet, exempt=True)
+  @EndpointsAliasProperty(setter=OrderSet, exempt=True)
   def order(self):
     """Getter to be used for default order EndpointsAliasProperty.
 
@@ -838,7 +838,7 @@ class EndpointsModel(ndb.Model):
     """
     return self._endpoints_query_info.order
 
-  def _PageTokenSet(self, value):
+  def PageTokenSet(self, value):
     """Setter to be used for default pageToken EndpointsAliasProperty.
 
     Tries to use Cursor.from_websafe_string to convert the value to a cursor
@@ -851,7 +851,7 @@ class EndpointsModel(ndb.Model):
     cursor = datastore_query.Cursor.from_websafe_string(value)
     self._endpoints_query_info.cursor = cursor
 
-  @EndpointsAliasProperty(setter=_PageTokenSet, exempt=True)
+  @EndpointsAliasProperty(setter=PageTokenSet, exempt=True)
   def pageToken(self):
     """Getter to be used for default pageToken EndpointsAliasProperty.
 
@@ -1113,7 +1113,7 @@ class EndpointsModel(ndb.Model):
       raise TypeError(error_msg)
 
     entity_kwargs = {}
-    alias_kwargs = {}
+    alias_args = []
 
     for field in message_class.all_fields():
       name = field.name
@@ -1133,7 +1133,7 @@ class EndpointsModel(ndb.Model):
         to_add = FromValue(value_property, value)
 
       if isinstance(value_property, EndpointsAliasProperty):
-        alias_kwargs[name] = to_add
+        alias_args.append((name, to_add))
       else:
         entity_kwargs[name] = to_add
 
@@ -1143,7 +1143,7 @@ class EndpointsModel(ndb.Model):
 
     # Set alias properties, will fail on an alias property if that
     # property was not defined with a setter
-    for name, value in alias_kwargs.iteritems():
+    for name, value in alias_args:
       setattr(entity, name, value)
 
     return entity
