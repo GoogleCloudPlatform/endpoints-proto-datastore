@@ -7,7 +7,7 @@ from endpoints_proto_datastore.ndb import EndpointsModel
 
 
 class MyModel(EndpointsModel):
-  _default_fields = ('id', 'attr1', 'attr2', 'created')
+  _message_fields_schema = ('id', 'attr1', 'attr2', 'created')
 
   attr1 = ndb.StringProperty()
   attr2 = ndb.StringProperty()

@@ -14,6 +14,8 @@ class Order(messages.Enum):
 
 
 class MyModel(EndpointsModel):
+  _message_fields_schema = ('attr1', 'attr2', 'owner', 'created')
+
   attr1 = ndb.StringProperty(required=True)
   attr2 = ndb.StringProperty(required=True)
   owner = ndb.UserProperty(required=True)
@@ -31,7 +33,7 @@ class MyModel(EndpointsModel):
       raise TypeError('Unexpected value of Order: %s.' % (value,))
 
   @EndpointsAliasProperty(setter=OrderSet, property_type=Order,
-                          default=Order.MYFIRST, exempt=True)
+                          default=Order.MYFIRST)
   def order(self):
     return super(MyModel, self).order
 

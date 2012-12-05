@@ -9,7 +9,7 @@ from endpoints_proto_datastore.ndb import EndpointsModel
 
 
 class MyParent(EndpointsModel):
-  _default_fields = ('name',)
+  _message_fields_schema = ('name',)
 
   updated = ndb.DateTimeProperty(auto_now=True)
 

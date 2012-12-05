@@ -12,6 +12,8 @@ DEFAULT_ORDER = 'attr1,-attr2'
 
 
 class MyModel(EndpointsModel):
+  _message_fields_schema = ('id', 'attr1', 'attr2', 'created')
+
   attr1 = ndb.StringProperty()
   attr2 = ndb.StringProperty()
   created = ndb.DateTimeProperty(auto_now_add=True)
@@ -29,8 +31,7 @@ class MyModel(EndpointsModel):
     if self.key is not None:
       return self.key.string_id()
 
-  @EndpointsAliasProperty(setter=EndpointsModel.OrderSet,
-                          default=DEFAULT_ORDER, exempt=True)
+  @EndpointsAliasProperty(setter=EndpointsModel.OrderSet, default=DEFAULT_ORDER)
   def order(self):
     return super(MyModel, self).order
 

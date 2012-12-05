@@ -37,10 +37,16 @@ QUERY_LIMIT_MAX = 100
 QUERY_MAX_EXCEEDED_TEMPLATE = '%s results requested. Exceeds limit of %s.'
 PROPERTY_COLLISION_TEMPLATE = ('Name conflict: %s set as an NDB property and '
                                'an Endpoints alias property.')
+BAD_FIELDS_SCHEMA_TEMPLATE = (
+    'Model %s has bad message fields schema type: %s. Only a '
+    'list, tuple, dictionary or MessageFieldsSchema are allowed.')
 REQUEST_MESSAGE = 'request_message'
 RESPONSE_MESSAGE = 'response_message'
 HTTP_METHOD = 'http_method'
 QUERY_HTTP_METHOD = 'GET'
+# This global will be updated after EndpointsModel is defined and is used by
+# the metaclass EndpointsMetaModel
+BASE_MODEL_CLASS = None
 
 EndpointsAliasProperty = properties.EndpointsAliasProperty
 MessageFieldsSchema = utils.MessageFieldsSchema
@@ -445,7 +451,7 @@ class EndpointsMetaModel(ndb.MetaModel):
 
     cls._FixUpAliasProperties()
 
-    cls._VerifyDefaultFields(classdict)
+    cls._VerifyMessageFieldsSchema(classdict)
     cls._VerifyProtoMapping(classdict)
 
   def _FixUpAliasProperties(cls):
@@ -468,14 +474,14 @@ class EndpointsMetaModel(ndb.MetaModel):
         prop._FixUp(attr_name)
         cls._alias_properties[prop._name] = prop
 
-  def _VerifyDefaultFields(cls, classdict):
-    """Verifies that the preset default fields correspond to actual properties.
+  def _VerifyMessageFieldsSchema(cls, classdict):
+    """Verifies that the preset message fields correspond to actual properties.
 
-    If no default fields were set on the class, sets the default fields using
-    the non-exempt properties.
+    If no message fields schema was set on the class, sets the schema using the
+    default fields determing by the NDB properties and alias properties defined.
 
-    In either case, converts the passed in default fields to an instance of
-       MessageFieldsSchema and sets that as the value of _default_fields
+    In either case, converts the passed in fields to an instance of
+       MessageFieldsSchema and sets that as the value of _message_fields_schema
        on the class.
 
     Args:
@@ -483,21 +489,22 @@ class EndpointsMetaModel(ndb.MetaModel):
           any subclass).
 
     Raises:
-      TypeError: if default fields was set on the class that was not a list,
-          tuple, dictionary, or MessageFieldsSchema instance.
+      TypeError: if a message fields schema was set on the class that is not a
+          list, tuple, dictionary, or MessageFieldsSchema instance.
     """
-    default_fields = classdict.get('_default_fields')
-    if default_fields is None:
-      default_fields = cls._DefaultFields()
-    elif isinstance(default_fields, (dict, list, tuple, MessageFieldsSchema)):
-      for attr in default_fields:
-        _VerifyProperty(cls, attr)
+    message_fields_schema = classdict.get('_message_fields_schema')
+    if message_fields_schema is None:
+      message_fields_schema = cls._DefaultFields()
+    elif not isinstance(message_fields_schema,
+                        (list, tuple, dict, MessageFieldsSchema)):
+      raise TypeError(BAD_FIELDS_SCHEMA_TEMPLATE %
+                      (cls.__name__, message_fields_schema.__class__.__name__))
     else:
-      raise TypeError('Model %s has bad default fields type: %s. Only a list, '
-                      'tuple, dictionary or MessageFieldsSchema are allowed.' %
-                      (cls.__name__, default_fields.__class__.__name__))
+      for attr in message_fields_schema:
+        _VerifyProperty(cls, attr)
 
-    cls._default_fields = MessageFieldsSchema(default_fields, name=cls.__name__)
+    cls._message_fields_schema = MessageFieldsSchema(message_fields_schema,
+                                                     name=cls.__name__)
 
   def _VerifyProtoMapping(cls, classdict):
     """Verifies that each property on the class has an associated proto mapping.
@@ -633,16 +640,16 @@ class EndpointsModel(ndb.Model):
   list can be used.
 
   When no fields are provided, the default fields from the class are used. This
-  can be overridden by setting the class variable _default_fields to a
+  can be overridden by setting the class variable _message_fields_schema to a
   dictionary, list, tuple or MessageFieldsSchema of your choice. If none is
   provided, the default will include all NDB properties and all Endpoints Alias
-  properties which are not marked as exempt.
+  properties.
   """
 
   __metaclass__ = EndpointsMetaModel
 
   _custom_property_to_proto = None
-  _default_fields = None
+  _message_fields_schema = None
 
   # A new instance of each of these will be created by the metaclass
   # every time a subclass is declared
@@ -671,10 +678,17 @@ class EndpointsModel(ndb.Model):
 
   @classmethod
   def _DefaultFields(cls):
-    """The default fields for the class using the non-exempt properties."""
+    """The default fields for the class.
+
+    Uses all NDB properties and alias properties which are different from the
+    alias properties defined on the parent class EndpointsModel.
+    """
     fields = cls._properties.keys()
+    # Only include Alias properties not defined on the base class
     for prop_name, prop in cls._alias_properties.iteritems():
-      if not prop._exempt:
+      base_alias_props = getattr(BASE_MODEL_CLASS, '_alias_properties', {})
+      base_prop = base_alias_props.get(prop_name)
+      if base_prop != prop:
         fields.append(prop_name)
     return fields
 
@@ -742,8 +756,7 @@ class EndpointsModel(ndb.Model):
     self._key = ndb.Key(self.__class__, value)
     self._MergeFromKey()
 
-  @EndpointsAliasProperty(setter=IdSet, exempt=True,
-                          property_type=messages.IntegerField)
+  @EndpointsAliasProperty(setter=IdSet, property_type=messages.IntegerField)
   def id(self):
     """Getter to be used for default id EndpointsAliasProperty.
 
@@ -779,7 +792,7 @@ class EndpointsModel(ndb.Model):
     self._key = ndb.Key(urlsafe=value)
     self._MergeFromKey()
 
-  @EndpointsAliasProperty(setter=EntityKeySet, exempt=True)
+  @EndpointsAliasProperty(setter=EntityKeySet)
   def entityKey(self):
     """Getter to be used for default entityKey EndpointsAliasProperty.
 
@@ -803,8 +816,7 @@ class EndpointsModel(ndb.Model):
     """
     self._endpoints_query_info.limit = value
 
-  @EndpointsAliasProperty(setter=LimitSet, exempt=True,
-                          property_type=messages.IntegerField)
+  @EndpointsAliasProperty(setter=LimitSet, property_type=messages.IntegerField)
   def limit(self):
     """Getter to be used for default limit EndpointsAliasProperty.
 
@@ -826,7 +838,7 @@ class EndpointsModel(ndb.Model):
     """
     self._endpoints_query_info.order = value
 
-  @EndpointsAliasProperty(setter=OrderSet, exempt=True)
+  @EndpointsAliasProperty(setter=OrderSet)
   def order(self):
     """Getter to be used for default order EndpointsAliasProperty.
 
@@ -850,7 +862,7 @@ class EndpointsModel(ndb.Model):
     cursor = datastore_query.Cursor.from_websafe_string(value)
     self._endpoints_query_info.cursor = cursor
 
-  @EndpointsAliasProperty(setter=PageTokenSet, exempt=True)
+  @EndpointsAliasProperty(setter=PageTokenSet)
   def pageToken(self):
     """Getter to be used for default pageToken EndpointsAliasProperty.
 
@@ -931,7 +943,7 @@ class EndpointsModel(ndb.Model):
           allow_message_fields set to False.
     """
     if fields is None:
-      fields = cls._default_fields
+      fields = cls._message_fields_schema
     # If fields is None, either the module user manaully removed the default
     # value or some bug has occurred in the library
     message_fields_schema = MessageFieldsSchema(fields,
@@ -1011,7 +1023,7 @@ class EndpointsModel(ndb.Model):
           the fields.
     """
     if collection_fields is None:
-      collection_fields = cls._default_fields
+      collection_fields = cls._message_fields_schema
     message_fields_schema = MessageFieldsSchema(collection_fields,
                                                 basename=cls.__name__ + 'Proto')
 
@@ -1492,3 +1504,5 @@ class EndpointsModel(ndb.Model):
       return apiserving_method_decorator(QueryFromRequestMethod)
 
     return RequestToQueryDecorator
+# Update base class global so EndpointsMetaModel can check subclasses against it
+BASE_MODEL_CLASS = EndpointsModel

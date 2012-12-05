@@ -106,8 +106,8 @@ class EndpointsAliasProperty(property):
 
   @utils.positional(2)
   def __init__(self, func=None, setter=None, fdel=None, doc=None,
-               repeated=False, required=False, default=None, exempt=False,
-               name=None, variant=None, property_type=DEFAULT_PROPERTY_TYPE):
+               repeated=False, required=False, default=None, name=None,
+               variant=None, property_type=DEFAULT_PROPERTY_TYPE):
     """Constructor for property.
 
     Attributes:
@@ -120,9 +120,6 @@ class EndpointsAliasProperty(property):
           this property is required in a message class.
       _repeated: A boolean attribute for ProtoRPC conversion, denoting whether
           this property is repeated in a message class.
-      _exempt: A boolean attribute used when creating default fields for a
-          model. Alias properties marked as exempt will not be included in a
-          default.
       _name: The true name of the property.
       _code_name: The attribute name of the property on the model that
           instantiated it.
@@ -147,8 +144,6 @@ class EndpointsAliasProperty(property):
       default: Optional default value for the property. Only set on the property
           instance if not None. Will be validated when a corresponding message
           field is created.
-      exempt: Optional boolean, defaults to False. If set, indicates that the
-          alias property should not be included in the default fields.
       name: A custom name that can be used to describe the property.
       variant: A variant of that can be used to augment the ProtoRPC field. Will
           be validated when a corresponding message field is created.
@@ -157,7 +152,6 @@ class EndpointsAliasProperty(property):
     """
     self._required = required
     self._repeated = repeated
-    self._exempt = exempt
     self._name = name
     self._code_name = None
 
