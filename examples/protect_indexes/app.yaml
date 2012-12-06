@@ -10,5 +10,6 @@ handlers:
   script: main.application
 
 libraries:
+# Needed for endpoints/users_id_token.py.
 - name: pycrypto
   version: "2.6"
