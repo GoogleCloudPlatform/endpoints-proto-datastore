@@ -16,9 +16,7 @@ class MyParent(EndpointsModel):
   def NameSet(self, value):
     if not isinstance(value, basestring):
       raise TypeError('Name must be a string.')
-
-    self.key = ndb.Key(MyParent, value)
-    self._MergeFromKey()
+    self.UpdateFromKey(ndb.Key(MyParent, value))
 
   @EndpointsAliasProperty(setter=NameSet, required=True,
                           property_type=messages.StringField)
@@ -38,8 +36,8 @@ class MyModel(EndpointsModel):
   def SetKey(self):
     # Can only set the key if both the parent and the child id are set
     if self._parent is not None and self._id is not None:
-      self.key = ndb.Key(MyParent, self._parent, MyModel, self._id)
-      self._MergeFromKey()
+      key = ndb.Key(MyParent, self._parent, MyModel, self._id)
+      self.UpdateFromKey(key)
 
   def SetParts(self):
     if self.key is not None:

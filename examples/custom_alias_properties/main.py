@@ -21,9 +21,7 @@ class MyModel(EndpointsModel):
   def IdSet(self, value):
     if not isinstance(value, basestring):
       raise TypeError('ID must be a string.')
-
-    self.key = ndb.Key(MyModel, value)
-    self._MergeFromKey()
+    self.UpdateFromKey(ndb.Key(MyModel, value))
 
   @EndpointsAliasProperty(setter=IdSet, required=True,
                           property_type=messages.StringField)

@@ -721,19 +721,22 @@ class EndpointsModel(ndb.Model):
         if current_value is None:
           setattr(self, attr_name, value)
 
-  def _MergeFromKey(self):
-    """Attempts to get current entity by key and update the unset properties.
+  def UpdateFromKey(self, key):
+    """Attempts to get current entity for key and update the unset properties.
 
-    Only does anything if the current entity has a key and there is a
-    corresponding entity in the datastore. Calls _CopyFromEntity to merge the
-    current entity with the one that was retrieved. If one was retrieved, sets
-    _from_datastore to True to signal that an entity was retrieved.
+    Only does anything if there is a corresponding entity in the datastore.
+    Calls _CopyFromEntity to merge the current entity with the one that was
+    retrieved. If one was retrieved, sets _from_datastore to True to signal that
+    an entity was retrieved.
+
+    Args:
+      key: An NDB key used to retrieve an entity.
     """
-    if self._key is not None:
-      entity = self._key.get()
-      if entity is not None:
-        self._CopyFromEntity(entity)
-        self._from_datastore = True
+    self._key = key
+    entity = self._key.get()
+    if entity is not None:
+      self._CopyFromEntity(entity)
+      self._from_datastore = True
 
   def IdSet(self, value):
     """Setter to be used for default id EndpointsAliasProperty.
@@ -752,9 +755,7 @@ class EndpointsModel(ndb.Model):
     """
     if not isinstance(value, (int, long)):
       raise TypeError('ID must be an integer.')
-
-    self._key = ndb.Key(self.__class__, value)
-    self._MergeFromKey()
+    self.UpdateFromKey(ndb.Key(self.__class__, value))
 
   @EndpointsAliasProperty(setter=IdSet, property_type=messages.IntegerField)
   def id(self):
@@ -788,9 +789,7 @@ class EndpointsModel(ndb.Model):
     """
     if not isinstance(value, basestring):
       raise TypeError('entityKey must be a string.')
-
-    self._key = ndb.Key(urlsafe=value)
-    self._MergeFromKey()
+    self.UpdateFromKey(ndb.Key(urlsafe=value))
 
   @EndpointsAliasProperty(setter=EntityKeySet)
   def entityKey(self):
