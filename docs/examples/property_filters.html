@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>property_filters</title>
+  <link rel="stylesheet" href="/css/pycco.css">
+</head>
+<body>
+<div id="background"></div>
+<div id='container'>
+  <div class='section'>
+    <div class='docs'><h1>property_filters</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>If you have not yet seen the source in <a href="/examples/paging.html">paging</a>, please take a look.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>In this sample we modify the query parameters in the <code>MyModelList</code> method to
+allow querying with simple equality filters.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">from</span> <span class="nn">google.appengine.ext</span> <span class="kn">import</span> <span class="n">ndb</span>
+<span class="kn">from</span> <span class="nn">protorpc</span> <span class="kn">import</span> <span class="n">remote</span>
+
+<span class="kn">import</span> <span class="nn">endpoints</span>
+
+<span class="kn">from</span> <span class="nn">endpoints_proto_datastore.ndb</span> <span class="kn">import</span> <span class="n">EndpointsModel</span>
+
+<span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">EndpointsModel</span><span class="p">):</span>
+  <span class="n">attr1</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">StringProperty</span><span class="p">()</span>
+  <span class="n">attr2</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">StringProperty</span><span class="p">()</span>
+  <span class="n">created</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">DateTimeProperty</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="nd">@endpoints.api</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;myapi&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;v1&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&#39;My Little API&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyApi</span><span class="p">(</span><span class="n">remote</span><span class="o">.</span><span class="n">Service</span><span class="p">):</span>
+
+  <span class="nd">@MyModel.method</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodel&#39;</span><span class="p">,</span> <span class="n">http_method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.insert&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelInsert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_model</span><span class="p">):</span>
+    <span class="n">my_model</span><span class="o">.</span><span class="n">put</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">my_model</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>To add simple filters, we set the keyword argument <code>query_fields</code> in the
+<code>MyModel.query_method</code> decorator. By specifying the fields <code>'attr1'</code> and <code>'attr2'</code>
+as the query fields, we can filter for entities based on the values of the
+NDB properties <code>attr1</code> and/or <code>attr2</code>.</p>
+
+      <p>For example, a request <code>/mymodels?attr1=cheese</code> will return all entities with
+<code>attr1</code> equal to <code>'cheese'</code>. The query parameters <code>attr1</code> and <code>attr2</code> can be used
+individually, at the same time, or not at all.</p>
+
+      <p>An NDB property can only be used in <code>query_fields</code> to construct an equality
+filter. For NDB properties which correspond to ProtoRPC message fields, such
+as <code>UserProperty</code> or <code>GeoPtProperty</code> (see <a href="/examples/basic_with_auth.html">basic_with_auth</a>), the values
+of the property cannot be represented simply via <code>/path?key=value</code>. As a
+result, such NDB properties are explicitly not allowed in <code>query_fields</code> and
+if this is attempted a <code>TypeError</code> will be raised.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@MyModel.query_method</span><span class="p">(</span><span class="n">query_fields</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;attr1&#39;</span><span class="p">,</span> <span class="s">&#39;attr2&#39;</span><span class="p">),</span>
+                        <span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodels&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.list&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">query</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>
+<span class="n">application</span> <span class="o">=</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">api_server</span><span class="p">([</span><span class="n">MyApi</span><span class="p">],</span> <span class="n">restricted</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>Head on to the next sample <a href="/examples/custom_api_response_messages.html">custom_api_response_messages<a>
+or head back to the <a href="/">main page</a>.</p>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

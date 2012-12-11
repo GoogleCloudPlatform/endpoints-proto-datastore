@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>simple_get</title>
+  <link rel="stylesheet" href="/css/pycco.css">
+</head>
+<body>
+<div id="background"></div>
+<div id='container'>
+  <div class='section'>
+    <div class='docs'><h1>simple_get</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>If you have not yet seen the source in <a href="/examples/basic.html">basic</a>, please take a look.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>In this sample we add an additional method <code>MyModelGet</code> which allows a specific
+entity to be retrieved.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">from</span> <span class="nn">google.appengine.ext</span> <span class="kn">import</span> <span class="n">ndb</span>
+<span class="kn">from</span> <span class="nn">protorpc</span> <span class="kn">import</span> <span class="n">remote</span>
+
+<span class="kn">import</span> <span class="nn">endpoints</span>
+
+<span class="kn">from</span> <span class="nn">endpoints_proto_datastore.ndb</span> <span class="kn">import</span> <span class="n">EndpointsModel</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>In this model definition, we have included <code>_message_fields_schema</code> to define
+a custom ProtoRPC message schema for this model. To see a similar but
+different way to use custom fields, check out the samples in
+<a href="/examples/custom_api_response_messages.html">custom_api_response_messages</a> and <a href="/examples/paging.html">paging</a>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">EndpointsModel</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <p>This results in a ProtoRPC message definition with four fields, in the exact
+order specified here: <code>id</code>, <code>attr1</code>, <code>attr2</code>, and <code>created</code>.
+The fields corresponding to properties (<code>attr1</code>, <code>attr2</code>, and <code>created</code>) are string
+fields as in <a href="/examples/basic.html">basic</a>. The field <code>id</code> will be an integer field
+representing the ID of the entity in the datastore. For example if <code>my_entity.key</code> is equal to <code>ndb.Key(MyModel, 1)</code>,
+the <code>id</code> is the integer <code>1</code>.</p>
+
+      <p>The property <code>id</code> is one of five helper properties provided by default to
+help you perform common operations like this (retrieving by ID). In addition
+there is an <code>entityKey</code> property which provides a base64 encoded version of
+a datastore key and can be used in a similar fashion as <code>id</code>, and three
+properties used for queries &mdash; <code>limit</code>, <code>order</code>, <code>pageToken</code> &mdash; which are
+described in more detail in <a href="/examples/paging.html">paging</a>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="n">_message_fields_schema</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="s">&#39;attr1&#39;</span><span class="p">,</span> <span class="s">&#39;attr2&#39;</span><span class="p">,</span> <span class="s">&#39;created&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>
+  <span class="n">attr1</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">StringProperty</span><span class="p">()</span>
+  <span class="n">attr2</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">StringProperty</span><span class="p">()</span>
+  <span class="n">created</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">DateTimeProperty</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="nd">@endpoints.api</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;myapi&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;v1&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&#39;My Little API&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyApi</span><span class="p">(</span><span class="n">remote</span><span class="o">.</span><span class="n">Service</span><span class="p">):</span>
+
+  <span class="nd">@MyModel.method</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodel&#39;</span><span class="p">,</span> <span class="n">http_method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.insert&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelInsert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_model</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <p>Here, since the schema includes an ID, it is possible that the entity
+<code>my_model</code> has an ID, hence we could be specifying a new ID in the datastore
+or overwriting an existing entity. If no ID is included in the ProtoRPC
+request, then no key will be set in the model and the ID will be set after
+the put completes, as in <a href="/examples/basic.html">basic</a>.</p>
+
+      <p>In either case, the datastore ID from the entity will be returned in the
+ProtoRPC response message.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">my_model</span><span class="o">.</span><span class="n">put</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">my_model</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>This method is not defined in any of the previous examples: it allows an
+entity to be retrieved from it's ID. As in
+<a href="/examples/custom_api_response_messages.html">custom_api_response_messages</a>, we override the schema of the ProtoRPC
+request message to limit to a single field: <code>id</code>. Since <code>id</code> is one of
+the helper methods provided by <code>EndpointsModel</code>, we may use it as one of our
+<code>request_fields</code>. In general, other than these five, only properties you
+define are allowed.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@MyModel.method</span><span class="p">(</span><span class="n">request_fields</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,),</span>
+                  <span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodel/{id}&#39;</span><span class="p">,</span> <span class="n">http_method</span><span class="o">=</span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.get&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelGet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_model</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <p>Since the field <code>id</code> is included, when it is set from the ProtoRPC
+message, the decorator attempts to retrieve the entity by its ID. If the
+entity was retrieved, the boolean <code>from_datastore</code> on the entity will be
+<code>True</code>, otherwise it will be <code>False</code>. In this case, if the entity we attempted
+to retrieve was not found, we return an HTTP 404 Not Found.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">if</span> <span class="ow">not</span> <span class="n">my_model</span><span class="o">.</span><span class="n">from_datastore</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">NotFoundException</span><span class="p">(</span><span class="s">&#39;MyModel not found.&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">my_model</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>This is identical to the example in <a href="/examples/basic.html">basic</a>, however since the
+ProtoRPC schema for the model now includes <code>id</code>, all the values in <code>items</code>
+will also contain an <code>id</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@MyModel.query_method</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodels&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.list&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">query</span>
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>
+<span class="n">application</span> <span class="o">=</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">api_server</span><span class="p">([</span><span class="n">MyApi</span><span class="p">],</span> <span class="n">restricted</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      <p>For more details on the behavior of setting <code>id</code>, see the sample
+<a href="/examples/custom_alias_properties.html">custom_alias_properties</a>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      <p>Head on to the next sample <a href="/examples/matching_queries_to_indexes.html">matching_queries_to_indexes<a>
+or head back to the <a href="/">main page</a>.</p>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

@@ -12,7 +12,7 @@ from endpoints_proto_datastore.ndb import EndpointsModel
 class MyModel(EndpointsModel):
   # By default, the ProtoRPC message schema corresponding to this model will
   # have three string fields: attr1, attr2 and created
-  # in an arbitrary order (the ordering of properties in a dict is not
+  # in an arbitrary order (the ordering of properties in a dictionary is not
   # guaranteed).
   attr1 = ndb.StringProperty()
   attr2 = ndb.StringProperty()
@@ -25,7 +25,7 @@ class MyModel(EndpointsModel):
 class MyApi(remote.Service):
 
   # Instead of the endpoints.method decorator, we can use MyModel.method to
-  # to define a new endpoints method, but instead of having to convert a
+  # define a new endpoints method. Instead of having to convert a
   # ProtoRPC request message into an entity of our model and back again, we
   # start out with a MyModel entity and simply have to return one.
   # Since no overrides for the schema are specified in this decorator, the
@@ -40,7 +40,7 @@ class MyApi(remote.Service):
     return my_model
 
   # As MyModel.method replaces a ProtoRPC request message to an entity of our
-  # model, MyModel.query_method replaces it with a query object for our Model.
+  # model, MyModel.query_method replaces it with a query object for our model.
   # By default, this query will take no arguments (the ProtoRPC request message
   # is empty) and will return a response with two fields: items and
   # nextPageToken. "nextPageToken" is simply a string field for paging through

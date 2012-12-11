@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>matching_queries_to_indexes</title>
+  <link rel="stylesheet" href="/css/pycco.css">
+</head>
+<body>
+<div id="background"></div>
+<div id='container'>
+  <div class='section'>
+    <div class='docs'><h1>matching_queries_to_indexes</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>If you have not yet seen the source in <a href="/examples/basic_with_auth.html">basic_with_auth</a> and
+<a href="/examples/paging.html">paging</a>, please take a look.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>In this sample we use a custom <code>Enum</code> for the <code>order</code> property in queries
+to strictly control the indexes used and make sure we have corresponding
+indexes created in <code>index.yaml</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">from</span> <span class="nn">google.appengine.ext</span> <span class="kn">import</span> <span class="n">ndb</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>This import allows us to define our own <code>Enum</code> using the ProtoRPC messages
+library. This is not usually needed, since <code>EndpointsModel</code> handles message
+definition, but in this case it is.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">from</span> <span class="nn">protorpc</span> <span class="kn">import</span> <span class="n">messages</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">protorpc</span> <span class="kn">import</span> <span class="n">remote</span>
+
+<span class="kn">import</span> <span class="nn">endpoints</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>We import <code>EndpointsAliasProperty</code> so that we can define our own helper property
+similar to the properties <code>id</code>, <code>entityKey</code>, <code>limit</code>, <code>order</code> and <code>pageToken</code>
+provided by <code>EndpointsModel</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">from</span> <span class="nn">endpoints_proto_datastore.ndb</span> <span class="kn">import</span> <span class="n">EndpointsAliasProperty</span>
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">endpoints_proto_datastore.ndb</span> <span class="kn">import</span> <span class="n">EndpointsModel</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>This is an <code>Enum</code> used to strictly define which order values are allowed.
+In this case, we are only allowing two query orders and have an enum value
+corresponding to each.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Order</span><span class="p">(</span><span class="n">messages</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+  <span class="n">MYFIRST</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="n">MYSECOND</span> <span class="o">=</span> <span class="mi">2</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">EndpointsModel</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>As in <a href="/examples/simple_get.html">simple_get</a>, by setting <code>_message_fields_schema</code>, we can set a
+custom ProtoRPC message schema. We set the schema to the four properties
+corresponding to the NDB properties and exclude the fifth property, which is
+the alias property <code>order</code>. Though the helper property <code>order</code> from
+<code>EndpointsModel</code> is not included in the message schema, since we define our
+own <code>order</code>, this would be included if we did not define our own schema.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="n">_message_fields_schema</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;attr1&#39;</span><span class="p">,</span> <span class="s">&#39;attr2&#39;</span><span class="p">,</span> <span class="s">&#39;owner&#39;</span><span class="p">,</span> <span class="s">&#39;created&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p>The properties <code>attr1</code> and <code>attr2</code> are required here so that all entities will
+have values for performing queries.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="n">attr1</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">StringProperty</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+  <span class="n">attr2</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">StringProperty</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+  <span class="n">created</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">DateTimeProperty</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      <p>As in <a href="/examples/basic_with_auth.html">basic_with_auth</a>, an <code>owner</code> property is used and each entity
+created will have the current user saved as the <code>owner</code>. As with <code>attr1</code> and
+<code>attr2</code> above, we are also requiring the <code>owner</code> field so we can use it for
+queries too.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="n">owner</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">UserProperty</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      <p>This is a setter which will be used by the helper property <code>order</code>, which we
+are overriding here. The setter used for that helper property is also named
+<code>OrderSet</code>. This method will be called when <code>order</code> is set from a ProtoRPC
+query request.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">OrderSet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>Since we wish to control which queries are made, we only accept values
+from our custom <code>Enum</code> type <code>Order</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Order</span><span class="p">):</span>
+      <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;Expected an enum, received: </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p>For <code>MYFIRST</code>, we order by <code>attr1</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">Order</span><span class="o">.</span><span class="n">MYFIRST</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>Use the method <code>OrderSet</code> from the parent class to set the string value
+based on the enum.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>      <span class="nb">super</span><span class="p">(</span><span class="n">MyModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">OrderSet</span><span class="p">(</span><span class="s">&#39;attr1&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      <p>For <code>MYSECOND</code>, we order by <code>attr2</code>, but in descending order.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="n">Order</span><span class="o">.</span><span class="n">MYSECOND</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      <p>Use the method <code>OrderSet</code> from the parent class to set the string value
+based on the enum.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>      <span class="nb">super</span><span class="p">(</span><span class="n">MyModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">OrderSet</span><span class="p">(</span><span class="s">&#39;-attr2&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      <p>For either case, the order used here will be combined with an equality
+filter based on the current user, and we have the corresponding indexes specified in
+<code>index.yaml</code> so no index errors are experienced by our users.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      <p>If the value is not a valid <code>Enum</code> value, raise a <code>TypeError</code>. This should
+never occur since <code>value</code> is known to be an instance of <code>Order</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">else</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;Unexpected value of Order: </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      <p>This <code>EndpointsAliasProperty</code> is our own helper property and overrides the
+original <code>order</code>. We specify the <code>setter</code> as the function <code>OrderSet</code> which we
+just defined. The <code>property_type</code> is the class <code>Order</code> and the default value of
+the alias property is <code>MYFIRST</code>.</p>
+
+      <p>Endpoints alias properties must have a corresponding property type, which
+can be either a ProtoRPC field or a ProtoRPC message class or enum class.
+Here, by providing a property type of <code>Order</code>, we aid in the creation of a
+field corresponding to this property in a ProtoRPC message schema.</p>
+
+      <p>The <code>EndpointsAliasProperty</code> can be used as a decorator as is done here, or
+can be used in the same way NDB properties are, e.g.
+<br>&nbsp;&nbsp;&nbsp;<code>attr1 = ndb.StringProperty()</code><br>
+and the similar
+<br>&nbsp;&nbsp;&nbsp;<code>order = EndpointsAliasProperty(OrderGet, setter=OrderSet, ...)</code><br>
+where <code>OrderGet</code> would be the function defined here.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@EndpointsAliasProperty</span><span class="p">(</span><span class="n">setter</span><span class="o">=</span><span class="n">OrderSet</span><span class="p">,</span> <span class="n">property_type</span><span class="o">=</span><span class="n">Order</span><span class="p">,</span>
+                          <span class="n">default</span><span class="o">=</span><span class="n">Order</span><span class="o">.</span><span class="n">MYFIRST</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-21'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-21'>#</a>
+      </div>
+      <p>We only need to limit the values to <code>Order</code> enums, so we can use the getter
+from the helper property with no changes.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MyModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">order</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-22'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-22'>#</a>
+      </div>
+      <p>Since we are using auth and want to test with the
+<a href="https://developers.google.com/apis-explorer/">Google APIs Explorer</a>
+we include it's client ID in <code>audiences</code>. This is necessary for auth tokens
+obtained by the API Explorer (on behalf of users) to be considered valid by
+our API.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@endpoints.api</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;myapi&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;v1&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&#39;My Little API&#39;</span><span class="p">,</span>
+               <span class="n">audiences</span><span class="o">=</span><span class="p">[</span><span class="n">endpoints</span><span class="o">.</span><span class="n">API_EXPLORER_CLIENT_ID</span><span class="p">])</span>
+<span class="k">class</span> <span class="nc">MyApi</span><span class="p">(</span><span class="n">remote</span><span class="o">.</span><span class="n">Service</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-23'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-23'>#</a>
+      </div>
+      <p>We specify that <code>request_fields</code> is <code>('attr1', 'attr2')</code> because the <code>created</code> value is set
+when the entity is put to the datastore and the <code>owner</code> is set from the
+current user. As in <a href="/examples/basic_with_auth.html">basic_with_auth</a>, since <code>user_required</code> is set to <code>True</code>, the
+current user will always be valid.</p>
+
+      <p>Since no <code>response_fields</code> are set, the four fields from
+<code>_message_fields_schema</code> will be sent in the response.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@MyModel.method</span><span class="p">(</span><span class="n">request_fields</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;attr1&#39;</span><span class="p">,</span> <span class="s">&#39;attr2&#39;</span><span class="p">),</span>
+                  <span class="n">user_required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                  <span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodel&#39;</span><span class="p">,</span> <span class="n">http_method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.insert&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelInsert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_model</span><span class="p">):</span>
+    <span class="n">my_model</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">get_current_user</span><span class="p">()</span>
+    <span class="n">my_model</span><span class="o">.</span><span class="n">put</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">my_model</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-24'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-24'>#</a>
+      </div>
+      <p>As in <a href="/examples/paging.html">paging</a>, we use the fields <code>limit</code>, <code>order</code> and <code>pageToken</code> for
+paging, but here <code>order</code> is the <code>Enum</code>-based property we defined above. As
+mentioned in the definition of <code>OrderSet</code>, these <code>order</code> values are coupled with
+the filter for current user.</p>
+
+      <p>Since no <code>collection_fields</code> are set, each value in <code>items</code> in the response
+will use the four fields from <code>_message_fields_schema</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@MyModel.query_method</span><span class="p">(</span><span class="n">query_fields</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;limit&#39;</span><span class="p">,</span> <span class="s">&#39;order&#39;</span><span class="p">,</span> <span class="s">&#39;pageToken&#39;</span><span class="p">),</span>
+                        <span class="n">user_required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                        <span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodels&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.list&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-25'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-25'>#</a>
+      </div>
+      <p>Current user is valid since <code>user_required</code> is set to <code>True</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">MyModel</span><span class="o">.</span><span class="n">owner</span> <span class="o">==</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">get_current_user</span><span class="p">())</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-26'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-26'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>
+<span class="n">application</span> <span class="o">=</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">api_server</span><span class="p">([</span><span class="n">MyApi</span><span class="p">],</span> <span class="n">restricted</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-27'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-27'>#</a>
+      </div>
+      <p>Head on to the next sample <a href="/examples/custom_alias_properties.html">custom_alias_properties<a>
+or head back to the <a href="/">main page</a>.</p>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>custom_alias_properties</title>
+  <link rel="stylesheet" href="/css/pycco.css">
+</head>
+<body>
+<div id="background"></div>
+<div id='container'>
+  <div class='section'>
+    <div class='docs'><h1>custom_alias_properties</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>If you have not yet seen the source in <a href="/examples/simple_get.html">simple_get</a>, please take a look.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>In this sample, we override two of the helper properties provided by
+<code>EndpointsModel</code>: <code>id</code> and <code>order</code>. The purpose of this sample is to understand
+how these properties &mdash; called alias properties &mdash; are used. For more
+reference on <code>EndpointsAliasProperty</code>, see <a href="/examples/matching_queries_to_indexes.html">matching_queries_to_indexes</a> and
+<a href="/examples/keys_with_ancestors.html">keys_with_ancestors</a>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">from</span> <span class="nn">google.appengine.ext</span> <span class="kn">import</span> <span class="n">ndb</span>
+<span class="kn">from</span> <span class="nn">protorpc</span> <span class="kn">import</span> <span class="n">remote</span>
+
+<span class="kn">import</span> <span class="nn">endpoints</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>See <a href="/examples/matching_queries_to_indexes.html">matching_queries_to_indexes</a> for reference on this import.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">from</span> <span class="nn">endpoints_proto_datastore.ndb</span> <span class="kn">import</span> <span class="n">EndpointsAliasProperty</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">from</span> <span class="nn">endpoints_proto_datastore.ndb</span> <span class="kn">import</span> <span class="n">EndpointsModel</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>The helper property <code>order</code> provided by <code>EndpointsModel</code> has no default value,
+but we can provide it with this one, which will result in ordering a query
+first by <code>attr1</code> and then <code>attr2</code> in descending order. To ensure queries using
+this order do not fail, we specify the equivalent index in <code>index.yaml</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">DEFAULT_ORDER</span> <span class="o">=</span> <span class="s">&#39;attr1,-attr2&#39;</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">EndpointsModel</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>As in <a href="/examples/simple_get.html">simple_get</a>, by setting <code>_message_fields_schema</code>, we can set a
+custom ProtoRPC message schema. We set the schema to the alias property
+<code>id</code> &mdash; which we override here &mdash; and the three properties corresponding to
+the NDB properties and exclude the fifth property, which is the alias
+property <code>order</code>.</p>
+
+      <p>The property <code>order</code> is excluded since we defined our own schema but would
+have been included otherwise. We have observed that the helper property
+<code>order</code> from <code>EndpointsModel</code> is not included in the ProtoRPC message schema
+when <code>_message_fields_schema</code> is not present, but this case does not
+contradict that fact. When <code>order</code> (or any of the other four helper
+properties) is overridden, it is treated like any other NDB or alias
+property and is included in the schema.
+</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="n">_message_fields_schema</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="s">&#39;attr1&#39;</span><span class="p">,</span> <span class="s">&#39;attr2&#39;</span><span class="p">,</span> <span class="s">&#39;created&#39;</span><span class="p">)</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>
+  <span class="n">attr1</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">StringProperty</span><span class="p">()</span>
+  <span class="n">attr2</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">StringProperty</span><span class="p">()</span>
+  <span class="n">created</span> <span class="o">=</span> <span class="n">ndb</span><span class="o">.</span><span class="n">DateTimeProperty</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>This is a setter which will be used by the helper property <code>id</code>, which we
+are overriding here. The setter used for that helper property is also named
+<code>IdSet</code>. This method will be called when <code>id</code> is set from a ProtoRPC query
+request.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">IdSet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p>By default, the property <code>id</code> assumes the <code>id</code> will be an integer in a
+simple key &mdash; e.g. <code>ndb.Key(MyModel, 10)</code> &mdash; which is the default behavior
+if no key is set. Instead, we wish to use a string value as the <code>id</code> here,
+so first check if the value being set is a string.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+      <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;ID must be a string.&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      <p>We call <code>UpdateFromKey</code>, which each of <code>EndpointsModel.IdSet</code> and
+<code>EndpointsModel.EntityKeySet</code> use, to update the current entity using a
+datastore key. This method sets the key on the current entity, attempts to
+retrieve a corresponding entity from the datastore and then patch in any
+missing values if an entity is found in the datastore.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="bp">self</span><span class="o">.</span><span class="n">UpdateFromKey</span><span class="p">(</span><span class="n">ndb</span><span class="o">.</span><span class="n">Key</span><span class="p">(</span><span class="n">MyModel</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      <p>This <code>EndpointsAliasProperty</code> is our own helper property and overrides the
+original <code>id</code>. We specify the <code>setter</code> as the function <code>IdSet</code> which we just
+defined. We also set <code>required=True</code> in the <code>EndpointsAliasProperty</code> decorator
+to signal that an <code>id</code> must always have a value if it is included in a
+ProtoRPC message schema.</p>
+
+      <p>Since no <code>property_type</code> is specified, the default value of
+<code>messages.StringField</code> is used.</p>
+
+      <p>See <a href="/examples/matching_queries_to_indexes.html">matching_queries_to_indexes</a> for more information on <code>EndpointsAliasProperty</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@EndpointsAliasProperty</span><span class="p">(</span><span class="n">setter</span><span class="o">=</span><span class="n">IdSet</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>First check if the entity has a key.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p>If the entity has a key, return only the <code>string_id</code>. The method <code>id()</code>
+would return any value, string, integer or otherwise, but we have a
+specific type we wish to use for the entity <code>id</code> and that is string.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">string_id</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>This <code>EndpointsAliasProperty</code> only seeks to override the default value used by
+the helper property <code>order</code>. Both the original getter and setter are used;
+the first by <code>setter=EndpointsModel.OrderSet</code> and the second by using <code>super</code>
+to call the original getter. The argument <code>default=DEFAULT_ORDER</code> is used to
+augment the <code>EndpointsAliasProperty</code> decorator by specifying a default value.
+This value is used by the corresponding ProtoRPC field to set a value if
+none is set by the request. Therefore, if a query has no order, rather than
+a basic query, the order of <code>DEFAULT_ORDER</code> will be used.</p>
+
+      <p>Since no <code>property_type</code> is specified, the default value of
+<code>messages.StringField</code> is used.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@EndpointsAliasProperty</span><span class="p">(</span><span class="n">setter</span><span class="o">=</span><span class="n">EndpointsModel</span><span class="o">.</span><span class="n">OrderSet</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_ORDER</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      <p>Use getter from parent class.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MyModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">order</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@endpoints.api</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;myapi&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;v1&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&#39;My Little API&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyApi</span><span class="p">(</span><span class="n">remote</span><span class="o">.</span><span class="n">Service</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      <p>Since <code>id</code> is required, we require that the request contain an <code>id</code> to be
+set on the entity. Rather than being specified in the POST body, we ask that
+the <code>id</code> be sent in the request by setting <code>path='mymodel/{id}'</code>. To insert
+a new value with <code>id</code> equal to <code>'cheese'</code> we would submit a request to
+<br>&nbsp;&nbsp;&nbsp;<code>.../mymodel/cheese</code><br>
+where <code>...</code> is the full path to the API.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@MyModel.method</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodel/{id}&#39;</span><span class="p">,</span> <span class="n">http_method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p">,</span>
+                  <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.insert&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelInsert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_model</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      <p>If the API user is trying to insert an entity which already exists in the
+datastore (as evidenced by <code>from_datastore</code> being <code>True</code>) then we return an
+HTTP 400 Bad request saying the entity already exists. We only want users
+to be able to insert new entities, not to overwrite existing ones.</p>
+
+      <p>See <a href="/examples/simple_get.html">simple_get</a> for more about <code>from_datastore</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">if</span> <span class="n">my_model</span><span class="o">.</span><span class="n">from_datastore</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      <p>We can use the entity name by retrieving the <code>string_id</code>, since we know
+our overridden definition of <code>id</code> ensures the <code>string_id</code> is set.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>      <span class="n">name</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">string_id</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-21'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-21'>#</a>
+      </div>
+      <p>We raise an exception which results in an HTTP 400.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>      <span class="k">raise</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">BadRequestException</span><span class="p">(</span>
+          <span class="s">&#39;MyModel of name </span><span class="si">%s</span><span class="s"> already exists.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-22'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-22'>#</a>
+      </div>
+      <p>If the entity does not already exist, insert it into the datastore. Since
+the key is set when <code>UpdateFromKey</code> is called within <code>IdSet</code>, the <code>id</code> of the
+inserted entity will be the value passed in from the request.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">my_model</span><span class="o">.</span><span class="n">put</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">my_model</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-23'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-23'>#</a>
+      </div>
+      <p>To use the helper property <code>order</code> that we defined, we specify <code>query_fields</code>
+equal to <code>('order',)</code> in the <code>MyModel.query_method decorator</code>. This will result
+in a single string field in the ProtoRPC message schema. If no <code>order</code> is
+specified in the query, the default value from the <code>order</code> property we
+defined will be used instead.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@MyModel.query_method</span><span class="p">(</span><span class="n">query_fields</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;order&#39;</span><span class="p">,),</span>
+                        <span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodels&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.list&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">MyModelList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">query</span>
+
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-24'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-24'>#</a>
+      </div>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>
+<span class="n">application</span> <span class="o">=</span> <span class="n">endpoints</span><span class="o">.</span><span class="n">api_server</span><span class="p">([</span><span class="n">MyApi</span><span class="p">],</span> <span class="n">restricted</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-25'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-25'>#</a>
+      </div>
+      <p>Head on to the next sample <a href="/examples/keys_with_ancestors.html">keys_with_ancestors<a>
+or head back to the <a href="/">main page</a>.</p>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

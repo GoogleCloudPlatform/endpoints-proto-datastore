@@ -1,0 +1,16 @@
+application: endpoints-proto-datastore
+version: 1
+runtime: python27
+threadsafe: true
+api_version: 1
+
+handlers:
+- url: /css
+  static_dir: css
+
+- url: /examples
+  static_dir: examples
+
+- url: /.*
+  static_files: index.html
+  upload: index\.html

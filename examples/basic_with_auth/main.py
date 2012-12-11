@@ -15,7 +15,7 @@ from endpoints_proto_datastore.ndb import EndpointsModel
 class MyModel(EndpointsModel):
   # By default, the ProtoRPC message schema corresponding to this model will
   # have four fields: attr1, attr2, created and owner
-  # in an arbitrary order (the ordering of properties in a dict is not
+  # in an arbitrary order (the ordering of properties in a dictionary is not
   # guaranteed).
   attr1 = ndb.StringProperty()
   attr2 = ndb.StringProperty()
@@ -31,7 +31,7 @@ class MyModel(EndpointsModel):
 
 # Since we are using auth and want to test with the Google APIs Explorer:
 # https://developers.google.com/apis-explorer/
-# we include it's client ID in audiences. This is necessary for auth tokens
+# we include its client ID in audiences. This is necessary for auth tokens
 # obtained by the API Explorer (on behalf of users) to be considered valid by
 # our API.
 @endpoints.api(name='myapi', version='v1', description='My Little API',
