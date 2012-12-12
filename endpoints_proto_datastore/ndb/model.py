@@ -1125,7 +1125,8 @@ class EndpointsModel(ndb.Model):
     entity_kwargs = {}
     alias_args = []
 
-    for field in message_class.all_fields():
+    for field in sorted(message_class.all_fields(),
+                        key=lambda field: field.number):
       name = field.name
       value = getattr(message, name, None)
       if value is None:
