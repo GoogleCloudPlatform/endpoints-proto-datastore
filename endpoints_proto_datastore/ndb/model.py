@@ -40,6 +40,9 @@ PROPERTY_COLLISION_TEMPLATE = ('Name conflict: %s set as an NDB property and '
 BAD_FIELDS_SCHEMA_TEMPLATE = (
     'Model %s has bad message fields schema type: %s. Only a '
     'list, tuple, dictionary or MessageFieldsSchema are allowed.')
+NO_MSG_FIELD_TEMPLATE = ('Tried to use a ProtoRPC message field: %s. Only '
+                         'simple fields can be used when allow message fields '
+                         'is turned off.')
 REQUEST_MESSAGE = 'request_message'
 RESPONSE_MESSAGE = 'response_message'
 HTTP_METHOD = 'http_method'
@@ -949,7 +952,13 @@ class EndpointsModel(ndb.Model):
                                                 basename=cls.__name__ + 'Proto')
 
     if message_fields_schema in cls._proto_models:
-      return cls._proto_models[message_fields_schema]
+      cached_model = cls._proto_models[message_fields_schema]
+      if not allow_message_fields:
+        for field in cached_model.all_fields():
+          if isinstance(field, messages.MessageField):
+            error_msg = NO_MSG_FIELD_TEMPLATE % (field.__class__.__name__,)
+            raise TypeError(error_msg)
+      return cached_model
 
     message_fields = {}
     for index, name in enumerate(message_fields_schema):
@@ -973,9 +982,7 @@ class EndpointsModel(ndb.Model):
 
       if not allow_message_fields:
         if isinstance(proto_attr, messages.MessageField):
-          error_msg = ('Tried to use a ProtoRPC message field: %s. Only simple '
-                       'fields can be used when allow message fields is turned '
-                       'off.' % (proto_attr.__class__.__name__,))
+          error_msg = NO_MSG_FIELD_TEMPLATE % (proto_attr.__class__.__name__,)
           raise TypeError(error_msg)
 
       message_fields[name] = proto_attr
