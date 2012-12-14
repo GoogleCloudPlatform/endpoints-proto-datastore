@@ -33,18 +33,76 @@ included with this project.</p>
         <a class='octothorpe' href='#section-1'>#</a>
       </div>
       <p>The Endpoints Proto Datastore API provides an abstraction that allows
-existing model classes to be used with Google Cloud Endpoints. It currently
-supports only NDB classes, but is written with all datastore APIs in mind. Using
-the Endpoints Proto Datastore API, custom models and properties can be created
+existing model classes to be used with Google Cloud Endpoints. By extending the
+functionality provided by <code>ndb.Model</code> class and the <code>endpoints</code>
+library, this library allows you to directly interact with model entities in your
+API methods rather than ProtoRPC requests.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>For example, instead of:</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@endpoints.method</span><span class="p">(</span><span class="n">MyModelMessage</span><span class="p">,</span> <span class="n">MyModelMessage</span><span class="p">,</span>
+                    <span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodel&#39;</span><span class="p">,</span> <span class="n">http_method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.insert&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">InsertModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+    <span class="n">my_model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span><span class="n">attr1</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">attr1</span><span class="p">,</span> <span class="n">attr2</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">attr2</span><span class="p">, ...)</span>
+    <span class="n">transformed_model</span> <span class="o">=</span> <span class="n">TransformModel</span><span class="p">(</span><span class="n">my_model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">MyModelMessage</span><span class="p">(</span><span class="n">attr1</span><span class="o">=</span><span class="n">transformed_model</span><span class="o">.</span><span class="n">attr1</span><span class="p">,</span>
+                          <span class="n">attr2</span><span class="o">=</span><span class="n">transformed_model</span><span class="o">.</span><span class="n">attr2</span><span class="p">, ...)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>we can directly use the entity in the request:</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="nd">@MyModel.method</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodel&#39;</span><span class="p">,</span> <span class="n">http_method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p">,</span>
+                  <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.insert&#39;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">InsertModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_model</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">TransformModel</span><span class="p">(</span><span class="n">my_model</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <p>without ever even having to define a ProtoRPC message class!</p>
+    </div>
+    <div class='code'><div class="highlight"><pre></pre></div></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>The Endpoints Proto Datastore API currently supports only NDB classes.
+Using the Endpoints Proto Datastore API, custom models and properties can be created
 to specify exactly how data that is sent to and sent by APIs written with Google
 Cloud Endpoints will be structured.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-2'>
+  <div class='section' id='section-6'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-2'>#</a>
+        <a class='octothorpe' href='#section-6'>#</a>
       </div>
       <p>Using a provided method, request and response message schemas can be
 defined that allow automatic serialization and deserialization of Cloud
@@ -53,20 +111,20 @@ same can be done to serialize and deserialize into model query objects.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-3'>
+  <div class='section' id='section-7'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-3'>#</a>
+        <a class='octothorpe' href='#section-7'>#</a>
       </div>
       <p>Through the samples provided in this sample, a reference is defined,
 building up from the simplest use case to the most complex.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-4'>
+  <div class='section' id='section-8'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-4'>#</a>
+        <a class='octothorpe' href='#section-8'>#</a>
       </div>
       <p>Please check out the <a href="http://code.google.com/p/endpoints-proto-datastore/source/browse/">source</a> code,
 and file any <a href="http://code.google.com/p/endpoints-proto-datastore/issues/list">issues or requests</a>
@@ -74,10 +132,10 @@ you have.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-5'>
+  <div class='section' id='section-9'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-5'>#</a>
+        <a class='octothorpe' href='#section-9'>#</a>
       </div>
       <p>To get started, check out our samples:
       <ul>
