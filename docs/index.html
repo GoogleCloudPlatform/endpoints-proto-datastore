@@ -56,7 +56,7 @@ API methods rather than ProtoRPC requests.</p>
                     <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.insert&#39;</span><span class="p">)</span>
   <span class="k">def</span> <span class="nf">InsertModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
     <span class="n">my_model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span><span class="n">attr1</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">attr1</span><span class="p">,</span> <span class="n">attr2</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">attr2</span><span class="p">, ...)</span>
-    <span class="n">transformed_model</span> <span class="o">=</span> <span class="n">TransformModel</span><span class="p">(</span><span class="n">my_model</span><span class="p">)</span>
+    <span class="n">transformed_model</span> <span class="o">=</span> <span class="n">DoSomething</span><span class="p">(</span><span class="n">my_model</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">MyModelMessage</span><span class="p">(</span><span class="n">attr1</span><span class="o">=</span><span class="n">transformed_model</span><span class="o">.</span><span class="n">attr1</span><span class="p">,</span>
                           <span class="n">attr2</span><span class="o">=</span><span class="n">transformed_model</span><span class="o">.</span><span class="n">attr2</span><span class="p">, ...)</span></pre></div>
     </div>
@@ -73,7 +73,7 @@ API methods rather than ProtoRPC requests.</p>
       <div class="highlight"><pre>  <span class="nd">@MyModel.method</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s">&#39;mymodel&#39;</span><span class="p">,</span> <span class="n">http_method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p">,</span>
                   <span class="n">name</span><span class="o">=</span><span class="s">&#39;mymodel.insert&#39;</span><span class="p">)</span>
   <span class="k">def</span> <span class="nf">InsertModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">my_model</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">TransformModel</span><span class="p">(</span><span class="n">my_model</span><span class="p">)</span></pre></div>
+    <span class="k">return</span> <span class="n">DoSomething</span><span class="p">(</span><span class="n">my_model</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'>
