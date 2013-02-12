@@ -28,13 +28,14 @@ class MyModel(EndpointsModel):
   owner = ndb.UserProperty()
 
 
-# Since we are using auth and want to test with the Google APIs Explorer:
+# Since we are using auth, we want to test with the Google APIs Explorer:
 # https://developers.google.com/apis-explorer/
-# we include its client ID in audiences. This is necessary for auth tokens
-# obtained by the API Explorer (on behalf of users) to be considered valid by
-# our API.
-@endpoints.api(name='myapi', version='v1', description='My Little API',
-               audiences=[endpoints.API_EXPLORER_CLIENT_ID])
+# By default, if allowed_client_ids is not specified, this is enabled by
+# default. If you specify allowed_client_ids, you'll need to include
+# endpoints.API_EXPLORER_CLIENT_ID in this list. This is necessary for auth
+# tokens obtained by the API Explorer (on behalf of users) to be considered
+# valid by our API.
+@endpoints.api(name='myapi', version='v1', description='My Little API')
 class MyApi(remote.Service):
 
   # To specify that this method requires authentication, we can simply set the

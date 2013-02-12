@@ -1,5 +1,5 @@
 application: endpoints-proto-datastore
-version: 3
+version: 4
 runtime: python27
 threadsafe: true
 api_version: 1

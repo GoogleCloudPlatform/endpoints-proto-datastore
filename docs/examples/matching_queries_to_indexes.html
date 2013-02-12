@@ -333,11 +333,13 @@ from the helper property with no changes.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-22'>#</a>
       </div>
-      <p>Since we are using auth and want to test with the
-<a href="https://developers.google.com/apis-explorer/">Google APIs Explorer</a>
-we include it's client ID in <code>audiences</code>. This is necessary for auth tokens
-obtained by the API Explorer (on behalf of users) to be considered valid by
-our API.</p>
+      <p>Since we are using auth, we want to test with the
+<a href="https://developers.google.com/apis-explorer/">Google APIs Explorer</a>.
+By default, if <code>allowed_client_ids</code> is not specified, this is
+enabled by default. If you specify <code>allowed_client_ids</code>, you'll
+need to include <code>endpoints.API_EXPLORER_CLIENT_ID</code> in this list.
+This is necessary for auth tokens obtained by the API Explorer (on behalf of
+users) to be considered valid by our API.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="nd">@endpoints.api</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;myapi&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;v1&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&#39;My Little API&#39;</span><span class="p">,</span>

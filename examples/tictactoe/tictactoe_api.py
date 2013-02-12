@@ -22,8 +22,8 @@ from models import Score
 
 @endpoints.api(name='tictactoe', version='v1',
                description='Tic Tac Toe API',
-               allowed_client_ids=['YOUR-CLIENT-ID'],
-               audiences=[endpoints.API_EXPLORER_CLIENT_ID])
+               allowed_client_ids=['YOUR-CLIENT-ID',
+                                   endpoints.API_EXPLORER_CLIENT_ID])
 class TicTacToeApi(remote.Service):
 
   @Board.method(path='board', http_method='POST',
