@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import endpoints
+from google.appengine.ext import endpoints
 
 import tictactoe_api
 

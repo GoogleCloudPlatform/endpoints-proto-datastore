@@ -3,10 +3,9 @@
 # In this sample we add an additional method MyModelGet which allows a specific
 # entity to be retrieved.
 
+from google.appengine.ext import endpoints
 from google.appengine.ext import ndb
 from protorpc import remote
-
-import endpoints
 
 from endpoints_proto_datastore.ndb import EndpointsModel
 

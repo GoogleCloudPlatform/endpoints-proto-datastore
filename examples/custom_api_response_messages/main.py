@@ -6,10 +6,9 @@
 # This is used to randomly set the value of attr2 based on attr1.
 import random
 
+from google.appengine.ext import endpoints
 from google.appengine.ext import ndb
 from protorpc import remote
-
-import endpoints
 
 from endpoints_proto_datastore.ndb import EndpointsModel
 

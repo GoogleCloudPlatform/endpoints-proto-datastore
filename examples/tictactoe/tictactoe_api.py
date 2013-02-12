@@ -14,7 +14,7 @@
 
 from protorpc import remote
 
-import endpoints
+from google.appengine.ext import endpoints
 
 from models import Board
 from models import Score

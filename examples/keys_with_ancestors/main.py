@@ -14,10 +14,9 @@
 # that a MyParent entity exists to be used as an ancestor, we provide a method
 # MyParentInsert to allow API users to create or update parent objects.
 
+from google.appengine.ext import endpoints
 from google.appengine.ext import ndb
 from protorpc import remote
-
-import endpoints
 
 # See matching_queries_to_indexes/main.py for reference on this import.
 from endpoints_proto_datastore.ndb import EndpointsAliasProperty

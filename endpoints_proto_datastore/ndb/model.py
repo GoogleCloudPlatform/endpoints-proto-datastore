@@ -20,12 +20,11 @@ from . import properties
 from . import utils as ndb_utils
 from .. import utils
 
-import endpoints
-
 from protorpc import messages
 
 from google.appengine.api import datastore_types
 from google.appengine.datastore import datastore_query
+from google.appengine.ext import endpoints
 from google.appengine.ext import ndb
 
 

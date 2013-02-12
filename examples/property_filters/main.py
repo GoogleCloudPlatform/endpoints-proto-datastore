@@ -3,10 +3,9 @@
 # In this sample we modify the query parameters in the MyModelList method to
 # allow querying with simple equality filters.
 
+from google.appengine.ext import endpoints
 from google.appengine.ext import ndb
 from protorpc import remote
-
-import endpoints
 
 from endpoints_proto_datastore.ndb import EndpointsModel
 

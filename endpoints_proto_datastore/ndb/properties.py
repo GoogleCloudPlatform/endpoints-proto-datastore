@@ -28,10 +28,9 @@ import warnings
 from . import utils as ndb_utils
 from .. import utils
 
-import endpoints
-
 from protorpc import messages
 
+from google.appengine.ext import endpoints
 from google.appengine.ext import ndb
 
 
