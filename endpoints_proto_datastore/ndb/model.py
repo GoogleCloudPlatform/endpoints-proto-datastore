@@ -453,8 +453,8 @@ class EndpointsMetaModel(ndb.MetaModel):
 
     cls._FixUpAliasProperties()
 
-    cls._VerifyMessageFieldsSchema(classdict)
-    cls._VerifyProtoMapping(classdict)
+    cls._VerifyMessageFieldsSchema()
+    cls._VerifyProtoMapping()
 
   def _FixUpAliasProperties(cls):
     """Updates the alias properties map and verifies each alias property.
@@ -476,7 +476,7 @@ class EndpointsMetaModel(ndb.MetaModel):
         prop._FixUp(attr_name)
         cls._alias_properties[prop._name] = prop
 
-  def _VerifyMessageFieldsSchema(cls, classdict):
+  def _VerifyMessageFieldsSchema(cls):
     """Verifies that the preset message fields correspond to actual properties.
 
     If no message fields schema was set on the class, sets the schema using the
@@ -486,15 +486,11 @@ class EndpointsMetaModel(ndb.MetaModel):
        MessageFieldsSchema and sets that as the value of _message_fields_schema
        on the class.
 
-    Args:
-      classdict: A dictionary of new attributes defined on the class (not on
-          any subclass).
-
     Raises:
       TypeError: if a message fields schema was set on the class that is not a
           list, tuple, dictionary, or MessageFieldsSchema instance.
     """
-    message_fields_schema = classdict.get('_message_fields_schema')
+    message_fields_schema = getattr(cls, '_message_fields_schema', None)
     if message_fields_schema is None:
       message_fields_schema = cls._DefaultFields()
     elif not isinstance(message_fields_schema,
@@ -508,7 +504,7 @@ class EndpointsMetaModel(ndb.MetaModel):
     cls._message_fields_schema = MessageFieldsSchema(message_fields_schema,
                                                      name=cls.__name__)
 
-  def _VerifyProtoMapping(cls, classdict):
+  def _VerifyProtoMapping(cls):
     """Verifies that each property on the class has an associated proto mapping.
 
     First checks if there is a _custom_property_to_proto dictionary present and
@@ -518,10 +514,6 @@ class EndpointsMetaModel(ndb.MetaModel):
     checking for a message field attribute, and then by trying to infer based
     on property subclass.
 
-    Args:
-      classdict: A dictionary of new attributes defined on the class (not on
-          any subclass).
-
     Raises:
       TypeError: if a key from _custom_property_to_proto is not a valid NBD
           property. (We don't allow EndpointsAliasProperty here because it
@@ -530,7 +522,7 @@ class EndpointsMetaModel(ndb.MetaModel):
           inference from a superclass, no appropriate mapping is found in
           _property_to_proto.
     """
-    custom_property_to_proto = classdict.get('_custom_property_to_proto')
+    custom_property_to_proto = getattr(cls, '_custom_property_to_proto', None)
     if isinstance(custom_property_to_proto, dict):
       for key, value in custom_property_to_proto.iteritems():
         if not utils.IsSubclass(key, ndb.Property):
