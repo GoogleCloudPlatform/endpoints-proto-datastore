@@ -24,6 +24,7 @@ Defined here:
 
 import datetime
 import warnings
+warnings.simplefilter('default')  # To allow DeprecationWarning
 
 from . import utils as ndb_utils
 from .. import utils
@@ -551,4 +552,4 @@ class EndpointsComputedProperty(ndb.ComputedProperty):
     to be able to call entity.some_computed_property_name = some_value without
     halting code, hence this will simply do nothing.
     """
-    warnings.warn('Cannot assign to a ComputedProperty.', Warning)
+    warnings.warn('Cannot assign to a ComputedProperty.', DeprecationWarning)
