@@ -491,7 +491,9 @@ class EndpointsMetaModel(ndb.MetaModel):
           list, tuple, dictionary, or MessageFieldsSchema instance.
     """
     message_fields_schema = getattr(cls, '_message_fields_schema', None)
-    if message_fields_schema is None:
+    # Also need to check we aren't re-using from EndpointsModel
+    base_schema = getattr(BASE_MODEL_CLASS, '_message_fields_schema', None)
+    if message_fields_schema is None or message_fields_schema == base_schema:
       message_fields_schema = cls._DefaultFields()
     elif not isinstance(message_fields_schema,
                         (list, tuple, dict, MessageFieldsSchema)):
