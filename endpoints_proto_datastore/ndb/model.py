@@ -1071,7 +1071,7 @@ class EndpointsModel(ndb.Model):
 
       # Since we are using getattr rather than checking self._values, this will
       # also work for properties which have a default set
-      value = getattr(self, name)
+      value = getattr(self, value_property._code_name)
       if value is None:
         continue
 
@@ -1143,13 +1143,14 @@ class EndpointsModel(ndb.Model):
       else:
         to_add = FromValue(value_property, value)
 
+      local_name = value_property._code_name
       if isinstance(value_property, EndpointsAliasProperty):
-        alias_args.append((name, to_add))
+        alias_args.append((local_name, to_add))
       else:
-        entity_kwargs[name] = to_add
+        entity_kwargs[local_name] = to_add
 
     # Will not throw exception if a required property is not included. This
-    # sort of exception if only thrown when attempting to put the entity.
+    # sort of exception is only thrown when attempting to put the entity.
     entity = cls(**entity_kwargs)
 
     # Set alias properties, will fail on an alias property if that
