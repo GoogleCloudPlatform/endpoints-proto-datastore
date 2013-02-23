@@ -224,6 +224,11 @@ class _EndpointsQueryInfo(object):
       attr_name = prop._code_name
       current_value = getattr(entity, attr_name)
 
+      if prop._repeated:
+        if current_value != []:
+          raise ValueError('No queries on repeated values are allowed.')
+        continue
+
       # Only filter for non-null values
       if current_value is not None:
         self._AddFilter(prop == current_value)
@@ -1075,7 +1080,7 @@ class EndpointsModel(ndb.Model):
       if value is None:
         continue
 
-      if getattr(proto_model, name).repeated:
+      if field.repeated:
         if not isinstance(value, (list, tuple)):
           error_msg = ('Property %s is a repeated field and its value should '
                        'be a list or tuple. Received: %s' % (name, value))
