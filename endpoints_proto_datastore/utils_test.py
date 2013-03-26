@@ -3,36 +3,18 @@
 """Tests for utils.py."""
 
 
-import os
-import subprocess
-import sys
 import unittest
-
-sys.modules.pop('google', None)
-dev_appserver_on_path = subprocess.check_output(
-    ['which', 'dev_appserver.py']).strip()
-if not os.path.exists(dev_appserver_on_path):
-  print >>sys.stderr, ('Dev Appserver path %r does not exist' %
-                       (dev_appserver_on_path,))
-  raise SystemExit(1)
-
-real_path = os.path.realpath(dev_appserver_on_path)
-sys.path.insert(0, os.path.dirname(real_path))
-import dev_appserver
-dev_appserver.fix_sys_path()
-
-project_root = subprocess.check_output(
-    ['git', 'rev-parse', '--show-toplevel']).strip()
-sys.path.insert(0, project_root)
 
 from protorpc import messages
 
-from endpoints_proto_datastore import utils
+from . import utils
 
 
 class UtilsTests(unittest.TestCase):
+  """Comprehensive test for the endpoints_proto_datastore.utils module."""
 
   def testIsSubclass(self):
+    """Tests the utils.IsSubclass method."""
     self.assertTrue(utils.IsSubclass(int, int))
 
     self.assertTrue(utils.IsSubclass(bool, int))
@@ -43,6 +25,7 @@ class UtilsTests(unittest.TestCase):
     self.assertFalse(utils.IsSubclass(int, None))
 
   def testDictToTuple(self):
+    """Tests the utils._DictToTuple method."""
     # pylint:disable-msg=W0212
     self.assertRaises(AttributeError, utils._DictToTuple, None)
 
@@ -58,6 +41,7 @@ class UtilsTests(unittest.TestCase):
     # pylint:enable-msg=W0212
 
   def testGeoPtMessage(self):
+    """Tests the utils.GeoPtMessage protorpc message class."""
     geo_pt_message = utils.GeoPtMessage(lat=1.0)
     self.assertEqual(geo_pt_message.lat, 1.0)
     self.assertEqual(geo_pt_message.lon, None)
@@ -79,9 +63,5 @@ class UtilsTests(unittest.TestCase):
     self.assertTrue(geo_pt_message.is_initialized())
 
 
-def main():
-  unittest.main()
-
-
 if __name__ == '__main__':
-  main()
+  unittest.main()
