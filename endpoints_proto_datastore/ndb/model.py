@@ -719,7 +719,7 @@ class EndpointsModel(ndb.Model):
       if value is not None:
         # Only overwrite null values
         current_value = getattr(self, attr_name)
-        if current_value is None:
+        if current_value is None or (prop._repeated and current_value == []):
           setattr(self, attr_name, value)
 
   def UpdateFromKey(self, key):
