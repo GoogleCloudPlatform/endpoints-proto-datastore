@@ -718,8 +718,11 @@ class EndpointsModel(ndb.Model):
       value = getattr(entity, attr_name)
       if value is not None:
         # Only overwrite null values
-        current_value = getattr(self, attr_name)
-        if current_value is None or (prop._repeated and current_value == []):
+        if isinstance(prop, EndpointsAliasProperty):
+          value_set = getattr(self, attr_name) is not None
+        else:
+          value_set = prop._name in self._values
+        if not value_set:
           setattr(self, attr_name, value)
 
   def UpdateFromKey(self, key):
