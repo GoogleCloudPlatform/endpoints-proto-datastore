@@ -97,6 +97,8 @@ dirname `readlink \`which dev_appserver.py\``
 ## Licensing
 
 - See [LICENSE][5]
+- **Note**: The test runner includes some code from the Twisted project, which
+  is [listed under terms other than Apache 2.0][11].
 
 [1]: https://endpoints-proto-datastore.googlecode.com/files/endpoints_proto_datastore.zip
 [2]: http://git-scm.com/book/en/Git-Tools-Submodules
@@ -108,3 +110,4 @@ dirname `readlink \`which dev_appserver.py\``
 [8]: https://developers.google.com/appengine/docs/python/tools/appengineconfig
 [9]: https://developers.google.com/appengine/docs/python/gettingstartedpython27/devenvironment
 [10]: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/master/endpoints_proto_datastore/endpoints_proto_datastore_test_runner.py
+[11]: http://twistedmatrix.com/trac/browser/trunk/LICENSE

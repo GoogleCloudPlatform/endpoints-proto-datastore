@@ -12,6 +12,8 @@ import subprocess
 import sys
 import unittest
 
+import test_utils
+
 
 MODULES_TO_TEST = ['utils']
 NO_DEVAPPSERVER_TEMPLATE = ('Either dev appserver file path %r does not exist '
@@ -34,13 +36,10 @@ def fix_up_path():
   # such as google.net.proto
   sys.modules.pop('google', None)
 
-  # TODO(dhermes): Support finding the correct location on Windows too.
   # Find where dev_appserver.py is installed locally. If dev_appserver.py
-  # is not on the path, then 'which' will exit with status code 1 and
-  # subprocess.check_output will raise an exception.
-  dev_appserver_on_path = subprocess.check_output(
-      ['which', 'dev_appserver.py']).strip()
-  if not os.path.exists(dev_appserver_on_path):
+  # is not on the path, then 'which' will return None.
+  dev_appserver_on_path = test_utils.which('dev_appserver.py')
+  if dev_appserver_on_path is None or not os.path.exists(dev_appserver_on_path):
     print >>sys.stderr, NO_DEVAPPSERVER_TEMPLATE % (dev_appserver_on_path,)
     raise SystemExit(1)
 
