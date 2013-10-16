@@ -15,6 +15,7 @@ try:
 except ImportError:
   import simplejson as json
 import pickle
+import re
 
 import endpoints
 
@@ -23,6 +24,7 @@ from . import utils as ndb_utils
 from .. import utils
 
 from protorpc import messages
+from protorpc import message_types
 
 from google.appengine.api import datastore_types
 from google.appengine.datastore import datastore_query
@@ -46,6 +48,7 @@ NO_MSG_FIELD_TEMPLATE = ('Tried to use a ProtoRPC message field: %s. Only '
 REQUEST_MESSAGE = 'request_message'
 RESPONSE_MESSAGE = 'response_message'
 HTTP_METHOD = 'http_method'
+PATH = 'path'
 QUERY_HTTP_METHOD = 'GET'
 # This global will be updated after EndpointsModel is defined and is used by
 # the metaclass EndpointsMetaModel
@@ -1002,6 +1005,73 @@ class EndpointsModel(ndb.Model):
     return message_class
 
   @classmethod
+  def ResourceContainer(cls, message=message_types.VoidMessage, fields=None):
+    """Creates a ResourceContainer using a subset of the class properties.
+
+    Creates a MessageFieldsSchema from the passed in fields (may cause exception
+    if not valid). If this MessageFieldsSchema is already in the cache of
+    models, returns the cached value.
+
+    If not, verifies that each property is valid (may cause exception) and then
+    uses the proto mapping to create the corresponding ProtoRPC field. Using the
+    created fields and the name from the MessageFieldsSchema, creates a new
+    ProtoRPC message class by calling the type() constructor.
+
+    Before returning it, it caches the newly created ProtoRPC message class.
+
+    Args:
+      fields: Optional fields, defaults to None. If None, the default from
+          the class is used. If specified, will be converted to a
+          MessageFieldsSchema object (and verified as such).
+
+    Returns:
+      The cached or created ProtoRPC message class specified by the fields.
+
+    Raises:
+      AttributeError: if a verified property has no proto mapping registered.
+          This is a serious error and should not occur due to what happens in
+          the metaclass.
+      TypeError: if a value from the proto mapping is not a ProtoRPC field or a
+          callable method (which takes a property and an index).
+      TypeError: if a proto mapping results in a ProtoRPC MessageField
+    """
+
+    if fields is None:
+      fields = cls._message_fields_schema
+    # If fields is None, either the module user manaully removed the default
+    # value or some bug has occurred in the library
+    message_fields_schema = MessageFieldsSchema(fields,
+                                                basename=cls.__name__ + 'Container')
+
+    message_fields = {}
+    for index, name in enumerate(message_fields_schema):
+      field_index = index + 1
+      prop = _VerifyProperty(cls, name)
+      to_proto = cls._property_to_proto.get(prop.__class__)
+
+      if to_proto is None:
+        raise AttributeError('%s does not have a proto mapping for %s.' %
+                             (cls.__name__, prop.__class__.__name__))
+
+      if utils.IsSimpleField(to_proto):
+        proto_attr = ndb_utils.MessageFromSimpleField(to_proto, prop,
+                                                      field_index)
+      elif callable(to_proto):
+        proto_attr = to_proto(prop, field_index)
+      else:
+        raise TypeError('Proto mapping for %s was invalid. Received %s, which '
+                        'was neither a ProtoRPC field, nor a callable object.' %
+                        (name, to_proto))
+
+      if isinstance(proto_attr, messages.MessageField):
+        error_msg = NO_MSG_FIELD_TEMPLATE % (proto_attr.__class__.__name__,)
+        raise TypeError(error_msg)
+
+      message_fields[name] = proto_attr
+
+    return endpoints.ResourceContainer(message, **message_fields)
+    
+  @classmethod
   def ProtoCollection(cls, collection_fields=None):
     """Creates a ProtoRPC message class using a subset of the class properties.
 
@@ -1125,7 +1195,9 @@ class EndpointsModel(ndb.Model):
       TypeError: if a repeated field has a value which is not a tuple or list.
     """
     message_class = message.__class__
-    if message_class not in cls._proto_models.values():
+    
+    # The CombinedContainer is a result of ResourceContainers and needs some better handling...
+    if message_class not in cls._proto_models.values() and message_class.__name__ != "CombinedContainer":
       error_msg = ('The message is an instance of %s, which is a class this '
                    'EndpointsModel does not know how to process.' %
                    (message_class.__name__))
@@ -1260,7 +1332,14 @@ class EndpointsModel(ndb.Model):
       raise TypeError('Received both a request message class and a field list '
                       'for creating a request message class.')
     if request_message is None:
-      kwargs[REQUEST_MESSAGE] = cls.ProtoModel(fields=request_fields)
+      path = kwards.get(PATH)
+      query_fields = []
+      if path is not None:
+        query_fields = re.findall("{(.*?)}", path)
+      if len(query_fields) > 0:
+        kwargs[REQUEST_MESSAGE] = cls.ResourceContainer(message=cls.ProtoModel(fields=request_fields), fields=query_fields)
+      else:
+        kwargs[REQUEST_MESSAGE] = cls.ProtoModel(fields=request_fields)
 
     response_message = kwargs.get(RESPONSE_MESSAGE)
     if response_fields is not None and response_message is not None:
@@ -1420,8 +1499,8 @@ class EndpointsModel(ndb.Model):
       raise TypeError('Received a request message class on a method intended '
                       'for queries. This is explicitly not allowed. Only '
                       'query_fields can be specified.')
-    kwargs[REQUEST_MESSAGE] = cls.ProtoModel(fields=query_fields,
-                                             allow_message_fields=False)
+
+    kwargs[REQUEST_MESSAGE] = cls.ResourceContainer(fields=query_fields)
 
     if RESPONSE_MESSAGE in kwargs:
       raise TypeError('Received a response message class on a method intended '
