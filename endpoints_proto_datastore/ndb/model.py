@@ -1008,24 +1008,22 @@ class EndpointsModel(ndb.Model):
   def ResourceContainer(cls, message=message_types.VoidMessage, fields=None):
     """Creates a ResourceContainer using a subset of the class properties.
 
-    Creates a MessageFieldsSchema from the passed in fields (may cause exception
-    if not valid). If this MessageFieldsSchema is already in the cache of
-    models, returns the cached value.
+    Creates a ResourceContainer using the provided message class as request body and
+    parameters created from the passed fields (may cause exception
+    if not valid).
 
-    If not, verifies that each property is valid (may cause exception) and then
+    Verifies that each property is valid (may cause exception) and then
     uses the proto mapping to create the corresponding ProtoRPC field. Using the
-    created fields and the name from the MessageFieldsSchema, creates a new
-    ProtoRPC message class by calling the type() constructor.
-
-    Before returning it, it caches the newly created ProtoRPC message class.
+    created fields and message class, creates a endpoints.ResourceContainer.
 
     Args:
+      message: ProtoRPC message class to be used as request body.
       fields: Optional fields, defaults to None. If None, the default from
           the class is used. If specified, will be converted to a
           MessageFieldsSchema object (and verified as such).
 
     Returns:
-      The cached or created ProtoRPC message class specified by the fields.
+      The ResourceCointainer specified by the fields and message.
 
     Raises:
       AttributeError: if a verified property has no proto mapping registered.
@@ -1038,7 +1036,7 @@ class EndpointsModel(ndb.Model):
 
     if fields is None:
       fields = cls._message_fields_schema
-    # If fields is None, either the module user manaully removed the default
+    # If fields is None, either the module user manually removed the default
     # value or some bug has occurred in the library
     message_fields_schema = MessageFieldsSchema(fields,
                                                 basename=cls.__name__ + 'Container')
@@ -1063,6 +1061,7 @@ class EndpointsModel(ndb.Model):
                         'was neither a ProtoRPC field, nor a callable object.' %
                         (name, to_proto))
 
+      # MessageFields can't be used in query or path parameters
       if isinstance(proto_attr, messages.MessageField):
         error_msg = NO_MSG_FIELD_TEMPLATE % (proto_attr.__class__.__name__,)
         raise TypeError(error_msg)
