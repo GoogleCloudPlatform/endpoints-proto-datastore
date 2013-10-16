@@ -1332,7 +1332,7 @@ class EndpointsModel(ndb.Model):
       raise TypeError('Received both a request message class and a field list '
                       'for creating a request message class.')
     if request_message is None:
-      path = kwards.get(PATH)
+      path = kwargs.get(PATH)
       query_fields = []
       if path is not None:
         query_fields = re.findall("{(.*?)}", path)
