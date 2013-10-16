@@ -1,4 +1,5 @@
-from google.appengine.ext import endpoints
+import endpoints
+
 from google.appengine.ext import ndb
 from protorpc import remote
 

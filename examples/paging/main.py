@@ -3,7 +3,8 @@
 # In this sample we modify the query parameters in the MyModelList method to
 # allow paging through results.
 
-from google.appengine.ext import endpoints
+import endpoints
+
 from google.appengine.ext import ndb
 from protorpc import remote
 

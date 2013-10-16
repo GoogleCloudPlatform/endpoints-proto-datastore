@@ -16,6 +16,8 @@ except ImportError:
   import simplejson as json
 import pickle
 
+import endpoints
+
 from . import properties
 from . import utils as ndb_utils
 from .. import utils
@@ -24,7 +26,6 @@ from protorpc import messages
 
 from google.appengine.api import datastore_types
 from google.appengine.datastore import datastore_query
-from google.appengine.ext import endpoints
 from google.appengine.ext import ndb
 
 
