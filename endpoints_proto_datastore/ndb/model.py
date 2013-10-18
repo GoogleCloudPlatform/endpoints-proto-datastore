@@ -967,9 +967,9 @@ class EndpointsModel(ndb.Model):
           raise TypeError(error_msg)
 
       message_fields[name] = proto_attr
-      
+
     return message_fields
-    
+
   @classmethod
   def ProtoModel(cls, fields=None, allow_message_fields=True):
     """Creates a ProtoRPC message class using a subset of the class properties.
@@ -1038,13 +1038,13 @@ class EndpointsModel(ndb.Model):
     Creates a MessageFieldsSchema from the passed in fields (may cause exception
     if not valid). If this MessageFieldsSchema in combination with the message
     is already in the cache, returns the cached value.
-    
+
     If not creates ProtoRPC fields from the MessageFieldsSchema (may cause
     exception) and creates a endpoints.ResourceContainer using the created
     ProtoRPC fields and the provided reques body message.
 
     Before returning it, it caches the newly created ResourceContainer.
-    
+
     Args:
       message: ProtoRPC message class to be used as request body.
       fields: Optional fields, defaults to None. If None, the default from
@@ -1062,18 +1062,18 @@ class EndpointsModel(ndb.Model):
     message_fields_schema = MessageFieldsSchema(fields,
                                                 basename=cls.__name__ + 'Proto')
 
-    container_hash = hash((message.__name__, message_fields_schema))
-    if container_hash in cls._resource_containers:
-      return cls._resource_containers[container_hash]
-                                                
+    container_key = (message.__name__, message_fields_schema)
+    if container_key in cls._resource_containers:
+      return cls._resource_containers[container_key]
+
     message_fields = cls._MessageFields(message_fields_schema,
                                         allow_message_fields=False)
 
     resource_container = endpoints.ResourceContainer(message, **message_fields)
 
-    cls._resource_containers[container_hash] = resource_container
+    cls._resource_containers[container_key] = resource_container
     return resource_container
-    
+
   @classmethod
   def ProtoCollection(cls, collection_fields=None):
     """Creates a ProtoRPC message class using a subset of the class properties.
@@ -1198,7 +1198,7 @@ class EndpointsModel(ndb.Model):
       TypeError: if a repeated field has a value which is not a tuple or list.
     """
     message_class = message.__class__
-    
+
     # The CombinedContainer is a result of ResourceContainers.
     # Might need some better handling...
     if (message_class not in cls._proto_models.values() and
