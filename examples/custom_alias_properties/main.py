@@ -6,7 +6,8 @@
 # reference on EndpointsAliasProperty, see matching_queries_to_indexes/main.py
 # and keys_with_ancestors/main.py.
 
-from google.appengine.ext import endpoints
+import endpoints
+
 from google.appengine.ext import ndb
 from protorpc import remote
 

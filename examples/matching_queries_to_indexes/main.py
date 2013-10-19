@@ -5,7 +5,8 @@
 # to strictly control the indexes used and make sure we have corresponding
 # indexes created in index.yaml.
 
-from google.appengine.ext import endpoints
+import endpoints
+
 from google.appengine.ext import ndb
 # This import allows us to define our own Enum using the ProtoRPC messages
 # library. This is not usually needed, since EndpointsModel handles message
