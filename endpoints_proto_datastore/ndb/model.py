@@ -455,6 +455,14 @@ class EndpointsMetaModel(ndb.MetaModel):
     """Verifies additional ProtoRPC properties on an NDB model."""
     super(EndpointsMetaModel, cls).__init__(name, bases, classdict)
 
+    # Reset the `_message_fields_schema` to `None` unless it was explicitly
+    # mentioned in the class definition. It's possible for this value to be
+    # set if a superclass had this value set by `_VerifyMessageFieldsSchema`
+    # then this subclass would keep that value, even if that was not the
+    # intended behavior.
+    if '_message_fields_schema' not in classdict:
+      cls._message_fields_schema = None
+
     cls._alias_properties = {}
     cls._proto_models = {}
     cls._proto_collections = {}
@@ -654,6 +662,11 @@ class EndpointsModel(ndb.Model):
 
   __metaclass__ = EndpointsMetaModel
 
+  # Custom properties that can be specified to override this value when
+  # the class is defined. The value for `custom_property_to_proto`
+  # will persist through subclasses while that for `_message_fields_schema`
+  # will only work on the class where it is explicitly mentioned in
+  # the definition.
   _custom_property_to_proto = None
   _message_fields_schema = None
 
