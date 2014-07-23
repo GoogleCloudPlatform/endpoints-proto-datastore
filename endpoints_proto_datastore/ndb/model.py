@@ -223,13 +223,10 @@ class _EndpointsQueryInfo(object):
     """Populates filters in query info by using values set on the entity."""
     entity = self._entity
     for prop in entity._properties.itervalues():
-      # The name of the attr on the model/object, may differ from the name
-      # of the NDB property in the datastore
-      attr_name = prop._code_name
-      current_value = getattr(entity, attr_name)
+      current_value = prop._retrieve_value(entity)
 
       if prop._repeated:
-        if current_value != []:
+        if current_value is not None:
           raise ValueError('No queries on repeated values are allowed.')
         continue
 
