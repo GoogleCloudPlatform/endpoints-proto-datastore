@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-from setuptools import setup, find_packages
+import setuptools
 import os
 
 
-setup(
-    ### Metadata
+setuptools.setup(
     name='endpoints-proto-datastore',
-    version='1.0.0',
+    version='0.9.0',
     description='Endpoints Proto Datastore API',
     long_description=open(os.path.join(os.path.dirname(__file__), 'README.md')).read(),
     url='https://github.com/GoogleCloudPlatform/endpoints-proto-datastore',
@@ -20,6 +19,5 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python'
     ],
-    ### Contents
-    packages=find_packages(exclude=['examples*', 'docs*']),
+    packages=setuptools.find_packages(exclude=['examples*', 'docs*']),
 )
