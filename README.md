@@ -39,9 +39,13 @@ To use this library in your App Engine application you can
     it in the root of your App Engine application. For example, on
     a Unix based machine:
 
-        ($GAE_PROJECT_ROOT)$ wget https://endpoints-proto-datastore.googlecode.com/files/endpoints_proto_datastore.zip
-        ($GAE_PROJECT_ROOT)$ unzip -q endpoints_proto_datastore.zip
-        ($GAE_PROJECT_ROOT)$ rm -f endpoints_proto_datastore.zip
+        ($GAE_PROJECT_ROOT)$ wget "https://github.com/GoogleCloudPlatform/"`
+                                  `"endpoints-proto-datastore/blob/"`
+                                  `"zipfile-branch/"`
+                                  `"endpoints_proto_datastore.zip?raw=true" \
+                             -O endpoints_proto_datastore.zip
+        ($GAE_PROJECT_ROOT)$ unzip endpoints_proto_datastore.zip
+        ($GAE_PROJECT_ROOT)$ rm endpoints_proto_datastore.zip
 
 -   Alternatively you can stay up to date by adding this repository to
     your project as a `git` [submodule][2]:
