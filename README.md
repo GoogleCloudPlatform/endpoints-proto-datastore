@@ -112,7 +112,7 @@ dirname `readlink \`which dev_appserver.py\``
 - **Note**: The test runner includes some code from the Twisted project, which
   is [listed under terms other than Apache 2.0][11].
 
-[1]: https://endpoints-proto-datastore.googlecode.com/files/endpoints_proto_datastore.zip
+[1]: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/zipfile-branch/endpoints_proto_datastore.zip?raw=true
 [2]: http://git-scm.com/book/en/Git-Tools-Submodules
 [3]: http://docs.python.org/2/tutorial/modules.html#importing-from-a-package
 [4]: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/master/CONTRIB.md
