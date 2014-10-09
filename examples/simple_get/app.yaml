@@ -1,17 +1,1 @@
-application: my-api
-version: 1
-runtime: python27
-threadsafe: true
-api_version: 1
-
-handlers:
-# Endpoints handler
-- url: /_ah/spi/.*
-  script: main.application
-
-libraries:
-# Needed for endpoints/users_id_token.py.
-- name: pycrypto
-  version: "2.6"
-- name: endpoints
-  version: 1.0
+../basic/app.yaml
