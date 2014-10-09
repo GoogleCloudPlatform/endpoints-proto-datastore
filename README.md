@@ -105,6 +105,12 @@ dirname `readlink \`which dev_appserver.py\``
 ## Contributing changes
 
 - See [CONTRIB.md][4]
+- To create docs for a contributed example, use [`pycco`][14].
+  For example:
+
+  ```sh
+  pycco example_name/main.py
+  ```
 
 ## Licensing
 
@@ -125,3 +131,4 @@ dirname `readlink \`which dev_appserver.py\``
 [11]: http://twistedmatrix.com/trac/browser/trunk/LICENSE
 [12]: http://stackoverflow.com/questions/ask?tags=endpoints-proto-datastore
 [13]: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/issues/new
+[14]: http://fitzgen.github.io/pycco/
