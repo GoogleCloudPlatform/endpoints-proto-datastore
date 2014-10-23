@@ -1346,16 +1346,20 @@ class EndpointsModel(ndb.Model):
     if request_fields is not None and request_message is not None:
       raise TypeError('Received both a request message class and a field list '
                       'for creating a request message class.')
-    if request_message is None:
-      path = kwargs.get(PATH)
-      query_fields = []
-      if path is not None:
-        query_fields = re.findall("{(.*?)}", path)
-      if len(query_fields) > 0:
-        kwargs[REQUEST_MESSAGE] = cls.ResourceContainer(
-            message=cls.ProtoModel(fields=request_fields), fields=query_fields)
-      else:
-        kwargs[REQUEST_MESSAGE] = cls.ProtoModel(fields=request_fields)
+
+    proto_message = request_message
+    if proto_message is None:
+      proto_message = cls.ProtoModel(fields=request_fields)
+
+    path = kwargs.get(PATH)
+    query_fields = []
+    if path is not None:
+      query_fields = re.findall("{(.*?)}", path)
+    if len(query_fields) > 0:
+      kwargs[REQUEST_MESSAGE] = cls.ResourceContainer(
+          message=proto_message, fields=query_fields)
+    else:
+      kwargs[REQUEST_MESSAGE] = proto_message
 
     response_message = kwargs.get(RESPONSE_MESSAGE)
     if response_fields is not None and response_message is not None:
