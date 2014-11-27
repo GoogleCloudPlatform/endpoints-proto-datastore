@@ -14,7 +14,6 @@ try:
   import json
 except ImportError:
   import simplejson as json
-import pickle
 import re
 
 import endpoints
@@ -100,8 +99,6 @@ def ToValue(prop, value):
     return prop.ToValue(value)
   elif isinstance(prop, ndb.JsonProperty):
     return json.dumps(value)
-  elif isinstance(prop, ndb.PickleProperty):
-    return pickle.dumps(value)
   elif isinstance(prop, ndb.UserProperty):
     return utils.UserMessageFromUser(value)
   elif isinstance(prop, ndb.GeoPtProperty):
@@ -148,8 +145,6 @@ def FromValue(prop, value):
     return prop.FromValue(value)
   elif isinstance(prop, ndb.JsonProperty):
     return json.loads(value)
-  elif isinstance(prop, ndb.PickleProperty):
-    return pickle.loads(value)
   elif isinstance(prop, ndb.UserProperty):
     return utils.UserMessageToUser(value)
   elif isinstance(prop, ndb.GeoPtProperty):

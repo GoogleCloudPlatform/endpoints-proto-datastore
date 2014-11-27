@@ -60,7 +60,7 @@ NDB_PROPERTY_TO_PROTO = {
     ndb.ModelKey: RaiseNotImplementedMethod(
         ndb.ModelKey,
         explanation=MODEL_KEY_EXPLANATION),
-    ndb.PickleProperty: messages.BytesField,
+    ndb.PickleProperty: messages.StringField,
     ndb.Property: RaiseNotImplementedMethod(ndb.Property),
     ndb.StringProperty: messages.StringField,
     ndb.TextProperty: messages.StringField,  # No concept of compressed here
