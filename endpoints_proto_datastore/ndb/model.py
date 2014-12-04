@@ -10,10 +10,6 @@ than converting between ProtoRPC messages and entities and then back again.
 
 import functools
 import itertools
-try:
-  import json
-except ImportError:
-  import simplejson as json
 import re
 
 import endpoints
@@ -97,8 +93,6 @@ def ToValue(prop, value):
     return value.ToMessage()
   elif hasattr(prop, 'ToValue') and callable(prop.ToValue):
     return prop.ToValue(value)
-  elif isinstance(prop, ndb.JsonProperty):
-    return json.dumps(value)
   elif isinstance(prop, ndb.UserProperty):
     return utils.UserMessageFromUser(value)
   elif isinstance(prop, ndb.GeoPtProperty):
@@ -143,8 +137,6 @@ def FromValue(prop, value):
 
   if hasattr(prop, 'FromValue') and callable(prop.FromValue):
     return prop.FromValue(value)
-  elif isinstance(prop, ndb.JsonProperty):
-    return json.loads(value)
   elif isinstance(prop, ndb.UserProperty):
     return utils.UserMessageToUser(value)
   elif isinstance(prop, ndb.GeoPtProperty):

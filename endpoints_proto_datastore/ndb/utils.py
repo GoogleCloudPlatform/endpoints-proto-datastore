@@ -42,6 +42,11 @@ COMPUTED_PROPERTY_EXPLANATION = (
     'A computed property can\'t be used to define an EndpointsModel. The type '
     'of the message field must be explicitly named; this can be done by using '
     'the property EndpointsComputedProperty.')
+JSON_PROPERTY_EXPLANATION = (
+    'A JSON property should not be used to define an EndpointsModel. Similar '
+    'functionality can be added by using a string property. For a nested '
+    'schema we recommend using ndb.StructuredProperty with other '
+    'EndpointsModel subclasses.')
 
 NDB_PROPERTY_TO_PROTO = {
     ndb.BlobKeyProperty: messages.StringField,
@@ -55,7 +60,9 @@ NDB_PROPERTY_TO_PROTO = {
     ndb.FloatProperty: messages.FloatField,
     ndb.GenericProperty: RaiseNotImplementedMethod(ndb.GenericProperty),
     ndb.IntegerProperty: messages.IntegerField,
-    ndb.JsonProperty: messages.BytesField,
+    ndb.JsonProperty: RaiseNotImplementedMethod(
+      ndb.JsonProperty,
+      explanation=JSON_PROPERTY_EXPLANATION),
     ndb.KeyProperty: messages.StringField,
     ndb.ModelKey: RaiseNotImplementedMethod(
         ndb.ModelKey,
