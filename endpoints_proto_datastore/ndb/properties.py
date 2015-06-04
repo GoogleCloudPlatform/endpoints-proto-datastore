@@ -29,7 +29,10 @@ warnings.simplefilter('default')  # To allow DeprecationWarning
 from . import utils as ndb_utils
 from .. import utils
 
-import endpoints
+try:
+  import endpoints
+except ImportError:
+  from google.appengine.ext import endpoints
 
 from protorpc import messages
 from google.appengine.ext import ndb

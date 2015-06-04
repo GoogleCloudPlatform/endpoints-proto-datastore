@@ -12,7 +12,10 @@ import functools
 import itertools
 import re
 
-import endpoints
+try:
+  import endpoints
+except ImportError:
+  from google.appengine.ext import endpoints
 
 from . import properties
 from . import utils as ndb_utils
