@@ -1,1 +1,6 @@
 *.pyc
+
+# Packages
+*.egg
+*.egg-info
+dist/

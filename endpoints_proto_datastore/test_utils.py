@@ -3,7 +3,7 @@
 """Utility module for tests.
 
 NOTE: The which method below is borrowed from a project with a different
-LICENSE. See README.md for this project for more details.
+LICENSE. See README.rst for this project for more details.
 """
 
 

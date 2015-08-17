@@ -2,7 +2,7 @@
 
 ## Contributor License Agreements
 
-We'd love to accept your sample apps and patches! Before we can take them, we 
+We'd love to accept your sample apps and patches! Before we can take them, we
 have to jump a couple of legal hurdles.
 
 Please fill out either the individual or corporate Contributor License Agreement
@@ -52,7 +52,7 @@ accept your pull requests.
     * For multi-language apps, concatenate the primary languages like this:
       appengine-sockets-python-java-go.
 
-1. Clone the README.md, CONTRIB.md and LICENSE files from the
+1. Clone the README.rst, CONTRIB.md and LICENSE files from the
    GoogleCloudPlatform/Template repo.
 1. Ensure that your code adheres to the existing style in the sample to which
    you are contributing. Refer to the

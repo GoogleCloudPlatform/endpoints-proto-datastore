@@ -9,6 +9,7 @@ By extending the functionality provided by `ndb.Model` class and the
 `endpoints` library, this library allows you to directly interact with model
 entities in your API methods rather than ProtoRPC requests. For example,
 instead of:
+
 ```python
   @endpoints.method(MyModelMessage, MyModelMessage,
                     path='mymodel', http_method='POST',
@@ -19,13 +20,16 @@ instead of:
     return MyModelMessage(attr1=transformed_model.attr1,
                           attr2=transformed_model.attr2, ...)
 ```
+
 we can directly use the entity in the request:
+
 ```python
   @MyModel.method(path='mymodel', http_method='POST',
                   name='mymodel.insert')
   def InsertModel(self, my_model):
     return DoSomething(my_model)
 ```
+
 without ever even having to define a ProtoRPC message class!
 
 Get started with the examples at:
@@ -39,18 +43,22 @@ To use this library in your App Engine application you can
     it in the root of your App Engine application. For example, on
     a Unix based machine:
 
-        ($GAE_PROJECT_ROOT)$ wget "https://github.com/GoogleCloudPlatform/"`
-                                  `"endpoints-proto-datastore/blob/"`
-                                  `"zipfile-branch/"`
-                                  `"endpoints_proto_datastore.zip?raw=true" \
-                             -O endpoints_proto_datastore.zip
-        ($GAE_PROJECT_ROOT)$ unzip endpoints_proto_datastore.zip
-        ($GAE_PROJECT_ROOT)$ rm endpoints_proto_datastore.zip
+    ```bash
+    (${GAE_PROJECT_ROOT})$ wget "https://github.com/GoogleCloudPlatform/"`
+                                `"endpoints-proto-datastore/blob/"`
+                                `"zipfile-branch/"`
+                                `"endpoints_proto_datastore.zip?raw=true" \
+                           -O endpoints_proto_datastore.zip
+    (${GAE_PROJECT_ROOT})$ unzip endpoints_proto_datastore.zip
+    (${GAE_PROJECT_ROOT})$ rm endpoints_proto_datastore.zip
+    ```
 
 -   Alternatively you can stay up to date by adding this repository to
     your project as a `git` [submodule][2]:
 
-        ($YOUR_GIT_ROOT)$ git submodule add https://github.com/GoogleCloudPlatform/endpoints-proto-datastore
+    ```bash
+    ($YOUR_GIT_ROOT)$ git submodule add https://github.com/GoogleCloudPlatform/endpoints-proto-datastore
+    ```
 
     This will create the entire project in the `endpoints-proto-datastore`
     folder in your project. Since [Python packages][3] require `__init__.py`
@@ -62,12 +70,14 @@ To use this library in your App Engine application you can
     [`appengine_config.py`][8] file (or create the file if it doesn't yet
     exist):
 
-        import os
-        import sys
+    ```python
+    import os
+    import sys
 
-        ENDPOINTS_PROJECT_DIR = os.path.join(os.path.dirname(__file__),
-                                             'endpoints-proto-datastore')
-        sys.path.append(ENDPOINTS_PROJECT_DIR)
+    ENDPOINTS_PROJECT_DIR = os.path.join(os.path.dirname(__file__),
+                                         'endpoints-proto-datastore')
+    sys.path.append(ENDPOINTS_PROJECT_DIR)
+    ```
 
     **Note**: If the App Engine project stored in your `git` repository is not
     at the root, you may need to add a symlink to the
@@ -89,8 +99,8 @@ To install App Engine visit the [Development Environment][9] page.
 All tests are wrapped into the [`endpoints_proto_datastore_test_runner.py`][10]
 module. To run the tests, simply execute
 
-```
-python $PATH_TO_TEST_RUNNER/endpoints_proto_datastore_test_runner.py
+```bash
+$ python ${PATH_TO_TEST_RUNNER}/endpoints_proto_datastore_test_runner.py
 ```
 
 This test runner assumes that you have App Engine SDK tools on your path and
@@ -98,25 +108,25 @@ will use the location of the `dev_appserver.py` script to determine the
 location of the SDK. For example, on a Unix based system it would be
 equivalent to:
 
-```
-dirname `readlink \`which dev_appserver.py\``
+```bash
+$ dirname `readlink \`which dev_appserver.py\``
 ```
 
 ## Contributing changes
 
-- See [CONTRIB.md][4]
-- To create docs for a contributed example, use [`pycco`][14].
-  For example:
+-   See [CONTRIB.md][4]
+-   To create docs for a contributed example, use [`pycco`][14].
+    For example:
 
-  ```sh
-  pycco example_name/main.py
-  ```
+    ```bash
+    $ pycco example_name/main.py
+    ```
 
 ## Licensing
 
-- See [LICENSE][5]
-- **Note**: The test runner includes some code from the Twisted project, which
-  is [listed under terms other than Apache 2.0][11].
+-   See [LICENSE][5]
+-   **Note**: The test runner includes some code from the Twisted project, which
+    is [listed under terms other than Apache 2.0][11].
 
 [1]: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/zipfile-branch/endpoints_proto_datastore.zip?raw=true
 [2]: http://git-scm.com/book/en/Git-Tools-Submodules
