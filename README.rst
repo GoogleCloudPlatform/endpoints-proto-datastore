@@ -1,5 +1,5 @@
-eendpoints-proto-datastore
---------------------------
+endpoints-proto-datastore
+-------------------------
 
 |pypi|
 
