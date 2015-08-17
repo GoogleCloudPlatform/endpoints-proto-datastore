@@ -1,5 +1,5 @@
-endpoints-proto-datastore
--------------------------
+eendpoints-proto-datastore
+--------------------------
 
 This library is intended to be used with the Python version of Google
 Cloud Endpoints. If you'd like to learn more about Google Cloud
@@ -131,18 +131,18 @@ Licensing
 -  **Note**: The test runner includes some code from the Twisted
    project, which is `listed under terms other than Apache 2.0`_.
 
-.. documentation: https://developers.google.com/appengine/docs/python/endpoints/
-.. folder: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/tree/master/endpoints_proto_datastore
-.. examples: http://endpoints-proto-datastore.appspot.com/
-.. endpoints_proto_datastore: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/zipfile-branch/endpoints_proto_datastore.zip?raw=true
-.. submodule: http://git-scm.com/book/en/Git-Tools-Submodules
-.. Python packages: http://docs.python.org/2/tutorial/modules.html#importing-from-a-package
-.. appengine_config.py: https://developers.google.com/appengine/docs/python/tools/appengineconfig
-.. Development Environment: https://developers.google.com/appengine/docs/python/gettingstartedpython27/devenvironment
-.. file an issue: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/issues/new
-.. ask a question: http://stackoverflow.com/questions/ask?tags=endpoints-proto-datastore
-.. endpoints_proto_datastore_test_runner.py: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/master/endpoints_proto_datastore/endpoints_proto_datastore_test_runner.py
-.. CONTRIB.md: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/master/CONTRIB.md
-.. pycco: http://fitzgen.github.io/pycco/
-.. LICENSE: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/master/LICENSE
-.. listed under terms other than Apache 2.0: http://twistedmatrix.com/trac/browser/trunk/LICENSE
+.. _documentation: https://developers.google.com/appengine/docs/python/endpoints/
+.. _folder: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/tree/master/endpoints_proto_datastore
+.. _examples: http://endpoints-proto-datastore.appspot.com/
+.. _endpoints_proto_datastore: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/zipfile-branch/endpoints_proto_datastore.zip?raw=true
+.. _submodule: http://git-scm.com/book/en/Git-Tools-Submodules
+.. _Python packages: http://docs.python.org/2/tutorial/modules.html#importing-from-a-package
+.. _appengine_config.py: https://developers.google.com/appengine/docs/python/tools/appengineconfig
+.. _Development Environment: https://developers.google.com/appengine/docs/python/gettingstartedpython27/devenvironment
+.. _file an issue: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/issues/new
+.. _ask a question: http://stackoverflow.com/questions/ask?tags=endpoints-proto-datastore
+.. _endpoints_proto_datastore_test_runner.py: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/master/endpoints_proto_datastore/endpoints_proto_datastore_test_runner.py
+.. _CONTRIB.md: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/master/CONTRIB.md
+.. _pycco: http://fitzgen.github.io/pycco/
+.. _LICENSE: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/master/LICENSE
+.. _listed under terms other than Apache 2.0: http://twistedmatrix.com/trac/browser/trunk/LICENSE
