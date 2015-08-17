@@ -1,6 +1,8 @@
 eendpoints-proto-datastore
 --------------------------
 
+|pypi|
+
 This library is intended to be used with the Python version of Google
 Cloud Endpoints. If you'd like to learn more about Google Cloud
 Endpoints, please visit our `documentation`_. To run each of these samples,
@@ -59,7 +61,7 @@ To use this library in your App Engine application you can
 
    .. code:: bash
 
-       ($YOUR_GIT_ROOT)$ git submodule add https://github.com/GoogleCloudPlatform/endpoints-proto-datastore
+       (${YOUR_GIT_ROOT})$ git submodule add https://github.com/GoogleCloudPlatform/endpoints-proto-datastore
 
    This will create the entire project in the ``endpoints-proto-datastore``
    folder in your project. Since `Python packages`_ require ``__init__.py``
@@ -146,3 +148,6 @@ Licensing
 .. _pycco: http://fitzgen.github.io/pycco/
 .. _LICENSE: https://github.com/GoogleCloudPlatform/endpoints-proto-datastore/blob/master/LICENSE
 .. _listed under terms other than Apache 2.0: http://twistedmatrix.com/trac/browser/trunk/LICENSE
+
+.. |pypi| image:: https://img.shields.io/pypi/v/endpoints-proto-datastore.svg
+   :target: https://pypi.python.org/pypi/endpoints-proto-datastore
