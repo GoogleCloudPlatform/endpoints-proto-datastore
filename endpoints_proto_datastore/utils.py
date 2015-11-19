@@ -11,7 +11,9 @@ __all__ = ['GeoPtMessage', 'MessageFieldsSchema', 'UserMessage',
 
 
 import datetime
+import json
 
+from endpoints import protojson
 from protorpc import messages
 from protorpc import util as protorpc_util
 
@@ -417,3 +419,40 @@ def query_method(modelclass, **kwargs):
         query method.
   """
   return _GetEndpointsMethodDecorator('query_method', modelclass, **kwargs)
+
+
+class _EPDProtoJson(protojson.EndpointsProtoJson):
+  """Slightly modifed version of EndpointsProtoJson.
+
+  The key difference is that when parsing a message, the dictionary keys
+  are stored on the newly created message.
+  """
+
+  def decode_message(self, message_type, encoded_message):
+    """Merge JSON structure to Message instance.
+
+    This implementation is virtually identical to protorpc.protojson.ProtoJson
+    except the keys of the parsed dictionary are stored in
+    _Message__decoded_fields on the parsed message. Note that the field name
+    must begin with _Message since the protorpc.message.Message metaclass
+    rejects almost all other names.
+
+    Args:
+      message_type: Message to decode data to.
+      encoded_message: JSON encoded version of message.
+
+    Returns:
+      Decoded instance of message_type.
+
+    Raises:
+      ValueError: If encoded_message is not valid JSON.
+      messages.ValidationError if merged message is not initialized.
+    """
+    if not encoded_message.strip():
+      return message_type()
+
+    msg_dictionary = json.loads(encoded_message)
+    message = self._ProtoJson__decode_dictionary(message_type, msg_dictionary)
+    message.check_initialized()
+    message._Message__decoded_fields = msg_dictionary.keys()
+    return message
