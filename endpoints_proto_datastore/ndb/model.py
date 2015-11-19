@@ -1213,6 +1213,8 @@ class EndpointsModel(ndb.Model):
 
     for field in sorted(message_class.all_fields(),
                         key=lambda field: field.number):
+      if not field.name in message._Message__decoded_fields:
+        continue
       name = field.name
       value = getattr(message, name, None)
       if value is None:
