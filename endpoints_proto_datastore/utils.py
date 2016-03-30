@@ -428,8 +428,8 @@ class _EPDProtoJson(protojson.EndpointsProtoJson):
   are stored on the newly created message.
   """
 
-  def decode_message(self, message_type, encoded_message):
-    """Merge JSON structure to Message instance.
+  def _ProtoJson__decode_dictionary(self, message_type, msg_dictionary):
+    """Merge dictionary into message.
 
     This implementation is virtually identical to protorpc.protojson.ProtoJson
     except the keys of the parsed dictionary are stored in
@@ -438,21 +438,14 @@ class _EPDProtoJson(protojson.EndpointsProtoJson):
     rejects almost all other names.
 
     Args:
-      message_type: Message to decode data to.
-      encoded_message: JSON encoded version of message.
+      message_type: Message type to merge dictionary into.
+      msg_dictionary: Dictionary to extract information from.  Dictionary
+        is as parsed from JSON.  Nested objects will also be dictionaries.
 
     Returns:
       Decoded instance of message_type.
-
-    Raises:
-      ValueError: If encoded_message is not valid JSON.
-      messages.ValidationError if merged message is not initialized.
     """
-    if not encoded_message.strip():
-      return message_type()
-
-    msg_dictionary = json.loads(encoded_message)
-    message = self._ProtoJson__decode_dictionary(message_type, msg_dictionary)
-    message.check_initialized()
-    message._Message__decoded_fields = msg_dictionary.keys()
-    return message
+    result = super(_EPDProtoJson, self)._ProtoJson__decode_dictionary(
+        message_type, msg_dictionary)
+    result._Message__decoded_fields = msg_dictionary.keys()
+    return result
