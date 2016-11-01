@@ -1,0 +1,3 @@
+include README.rst
+graft endpoints_proto_datastore
+global-exclude *.pyc

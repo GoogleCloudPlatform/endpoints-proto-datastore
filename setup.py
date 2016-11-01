@@ -7,7 +7,7 @@ LONG_DESCRIPTION = open(README_FILENAME).read()
 
 setuptools.setup(
     name='endpoints-proto-datastore',
-    version='0.9.0',
+    version='0.10.0',
     description='Google Cloud Endpoints Proto Datastore Library',
     long_description=LONG_DESCRIPTION,
     url='https://github.com/GoogleCloudPlatform/endpoints-proto-datastore',
